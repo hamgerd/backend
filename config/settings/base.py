@@ -8,7 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = []
 
-LOCAL_APPS = ["organization"]
+LOCAL_APPS = [
+    "users.apps.UsersConfig",
+    "organization.apps.OrganizationConfig",
+]
 THIRD_PARY_APPS = [
     'drf_yasg',
     "rest_framework",
@@ -78,3 +81,5 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "users.User"
