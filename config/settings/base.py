@@ -8,8 +8,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = []
 
-LOCAL_APPS = []
+LOCAL_APPS = ["organization"]
 THIRD_PARY_APPS = [
+    'drf_yasg',
     "rest_framework",
 ]
 INSTALLED_APPS = [
