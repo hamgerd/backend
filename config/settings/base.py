@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -13,7 +14,7 @@ LOCAL_APPS = [
     "organization.apps.OrganizationConfig",
 ]
 THIRD_PARY_APPS = [
-    'drf_yasg',
+    "drf_yasg",
     "rest_framework",
 ]
 INSTALLED_APPS = [
@@ -83,3 +84,16 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+}
