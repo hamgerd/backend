@@ -14,3 +14,15 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+
+    @classmethod
+    def get_all_organizations(cls):
+        """Return all organizations"""
+        return cls.objects.all()
+
+    @classmethod
+    def get_organizations_by_owner(cls, user):
+        """Return all organizations owned by a specific user"""
+        return cls.objects.filter(owner=user)
+    
