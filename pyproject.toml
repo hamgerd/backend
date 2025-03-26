@@ -12,4 +12,5 @@ dependencies = [
     "drf-yasg>=1.21.10",
     "python-decouple>=3.8",
     "ruff>=0.11.2",
+    "psycopg2-binary>=2.9.10",
 ]
