@@ -4,4 +4,4 @@ from django.utils.translation import gettext
 
 
 class User(AbstractUser):
-    email = models.EmailField(gettext("email address"), blank=True, unique=True)
+    email = models.EmailField(gettext("email address"), unique=True)
