@@ -25,3 +25,7 @@ class Organization(models.Model):
     def get_organizations_by_owner(cls, user):
         """Return all organizations owned by a specific user"""
         return cls.objects.filter(owner=user)
+
+    @classmethod
+    def get_organization_by_id(cls, _id):
+        return cls.objects.filter(id=_id)
