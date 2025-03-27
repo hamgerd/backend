@@ -29,7 +29,7 @@ class UserRegisterView(GenericAPIView):
     def post(self, request: Request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            user = serializer.save(is_active=False)
+            user = serializer.create(serializer.validated_data)
             verification_token = VerificationToken.objects.create(
                 user=user,
                 type=VerificationTypeChoices.EMAIL,
