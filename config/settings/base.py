@@ -11,6 +11,7 @@ ALLOWED_HOSTS = []
 
 LOCAL_APPS = [
     "users.apps.UsersConfig",
+    "core.apps.CoreConfig",
     "organization.apps.OrganizationConfig",
 ]
 THIRD_PARY_APPS = [
