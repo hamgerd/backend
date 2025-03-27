@@ -1,3 +1,13 @@
+
+x-environment: &DJANGO_VARS
+  EMAIL_HOST: smtp4dev
+  EMAIL_PORT: 25
+  EMAIL_USE_TLS: "False"
+  DEFAULT_FROM_EMAIL: noreply<no_reply@domain.com>
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/0
+  DJANGO_SETTINGS_MODULE: config.settings.development
+
 services:
   backend:
     build: .
@@ -6,10 +16,7 @@ services:
       - .:/app
       - /app/.venv
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - EMAIL_HOST=smtp4dev
-      - EMAIL_PORT=25
+      *DJANGO_VARS
     ports:
       - "8000:8000"
 
@@ -20,10 +27,7 @@ services:
       - .:/app
       - /app/.venv
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - EMAIL_HOST=smtp4dev
-      - EMAIL_PORT=25
+      *DJANGO_VARS
 
   redis:
     image: redis:7.4.2-alpine
