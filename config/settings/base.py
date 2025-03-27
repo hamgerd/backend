@@ -10,7 +10,7 @@ SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = []
 
 LOCAL_APPS = [
-    "users.apps.UsersConfig",
+    "core.apps.CoreConfig",
     "organization.apps.OrganizationConfig",
     "events.apps.EventsConfig",
     "users.apps.UsersConfig",
