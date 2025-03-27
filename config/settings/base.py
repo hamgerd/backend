@@ -10,9 +10,10 @@ SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = []
 
 LOCAL_APPS = [
-    "users.apps.UsersConfig",
     "core.apps.CoreConfig",
     "organization.apps.OrganizationConfig",
+    "users.apps.UsersConfig",
+    "verification.apps.VerificationConfig",
 ]
 THIRD_PARY_APPS = [
     "drf_yasg",
