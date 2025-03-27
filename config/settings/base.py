@@ -10,8 +10,9 @@ SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = []
 
 LOCAL_APPS = [
-    "core.apps.CoreConfig",
+    "users.apps.UsersConfig",
     "organization.apps.OrganizationConfig",
+    "events.apps.EventsConfig",
     "users.apps.UsersConfig",
     "verification.apps.VerificationConfig",
 ]
@@ -110,17 +111,3 @@ SWAGGER_SETTINGS = {
     },
     "LOGIN_URL": "token_obtain_pair",
 }
-
-# Email
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = config("EMAIL_HOST")
-EMAIL_PORT = config("EMAIL_PORT", cast=int)
-EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
-
-# Celery
-CELERY_BROKER_URL = config("CELERY_BROKER_URL")
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", None)
-CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True

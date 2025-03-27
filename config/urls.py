@@ -4,6 +4,8 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
+from events.urls import router as events_router
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Snippets API",
@@ -28,4 +30,5 @@ urlpatterns = [
     # apps
     path("organization/", include("organization.urls")),
     path("users/", include("users.urls")),
+    path("events/", include(events_router.urls)),
 ]
