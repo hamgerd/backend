@@ -83,6 +83,10 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -125,3 +129,20 @@ DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 CELERY_BROKER_URL = config("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", None)
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Minio
+AWS_S3_ENDPOINT_URL = config("MINIO_STORAGE_ENDPOINT")
+AWS_ACCESS_KEY_ID = config("MINIO_STORAGE_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = config("MINIO_STORAGE_SECRET_KEY")
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {"bucket_name": config("MINIO_STORAGE_BUCKET_NAME", "static")},
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {"bucket_name": config("MINIO_STORAGE_BUCKET_NAME", "static")},
+    },
+}
+
