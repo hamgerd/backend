@@ -32,5 +32,4 @@ class EventCreateSerializer(serializers.ModelSerializer):
             'start_date',
             'end_date',
             'location',
-            'max_participants'
         ]

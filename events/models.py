@@ -29,7 +29,6 @@ class Event(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     location = models.CharField(max_length=255)
-
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -54,6 +53,11 @@ class Event(models.Model):
             organization_id=organization_id,
             is_active=True
         )
+
+    @property
+    def max_participants(self):
+        return sum([item.max_participants for item in self.ticket_types.all()])
+
 
 class TicketType(models.Model):
     title = models.CharField(256)
@@ -83,7 +87,7 @@ class Ticket(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Ticket'
         verbose_name_plural = 'Tickets'
-        unique_together = ['user', 'event']
+        unique_together = ['user', 'ticket_type']
 
     def __str__(self):
         return f"Ticket {self.ticket_number} - {self.event.title}"
@@ -139,3 +143,7 @@ class Ticket(models.Model):
     def get_event_tickets(cls, event):
         """Get all tickets for an event"""
         return cls.objects.filter(event=event)
+
+    @property
+    def event(self):
+        return self.ticket_type.event
