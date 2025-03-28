@@ -4,7 +4,7 @@ from pathlib import Path
 import dj_database_url
 from decouple import config
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = []
@@ -44,7 +44,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR / "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -113,7 +115,7 @@ SWAGGER_SETTINGS = {
             "in": "header",
         },
     },
-    "LOGIN_URL": "token_obtain_pair",
+    "LOGIN_URL": "users:token_obtain_pair",
 }
 
 # Email
@@ -146,3 +148,4 @@ STORAGES = {
     },
 }
 
+VERIFICATION_DOMAIN = config("VERIFICATION_DOMAIN")
