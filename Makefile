@@ -25,5 +25,9 @@ shell:
 superuser:
 	$(python3) manage.py createsuperuser
 
+collectstatic:
+	$(python3) manage.py collectstatic --no-input
+
 worker:
 	uv run celery -A config worker -l info
+
