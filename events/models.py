@@ -1,4 +1,5 @@
 from time import timezone
+from enum import Enum
 
 from django.db import models
 from django.core.validators import MinValueValidator
@@ -6,6 +7,16 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from config.settings.base import AUTH_USER_MODEL
 from organization.models import Organization
+
+class TicketStatus(Enum):
+    PENDING = 'pending'
+    CONFIRMED = 'confirmed'
+    CANCELLED = 'cancelled'
+    EXPIRED = 'expired'
+
+    @classmethod
+    def choices(cls):
+        return [(status.value, status.name.title()) for status in cls]
 
 class Event(models.Model):
     title = models.CharField(max_length=255)
@@ -18,11 +29,7 @@ class Event(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     location = models.CharField(max_length=255)
-    max_participants = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)],
-        null=True,
-        blank=True
-    )
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -48,28 +55,29 @@ class Event(models.Model):
             is_active=True
         )
 
+class TicketType(models.Model):
+    title = models.CharField(256)
+    description = models.TextField
+    max_participants = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        null=True,
+        blank=True
+    )
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
+    # price = models.PositiveIntegerField()
 
 class Ticket(models.Model):
-    STATUS_PENDING = 'pending'
-    STATUS_CONFIRMED = 'confirmed'
-    STATUS_CANCELLED = 'cancelled'
-    STATUS_EXPIRED = 'expired'
-    
-    STATUS_CHOICES = [
-        (STATUS_PENDING, 'Pending'),
-        (STATUS_CONFIRMED, 'Confirmed'),
-        (STATUS_CANCELLED, 'Cancelled'),
-        (STATUS_EXPIRED, 'Expired'),
-    ]
-
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="tickets")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE, related_name="tickets")
+    status = models.CharField(
+        max_length=20,
+        choices=TicketStatus.choices(),
+        default=TicketStatus.PENDING.value
+    )
     ticket_number = models.CharField(max_length=50, unique=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    expires_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -87,7 +95,7 @@ class Ticket(models.Model):
         
         if self.event.max_participants:
             confirmed_tickets = self.event.tickets.filter(
-                status=self.STATUS_CONFIRMED
+                status=TicketStatus.CONFIRMED.value
             ).exclude(id=self.id).count()
             if confirmed_tickets >= self.event.max_participants:
                 raise ValidationError("Event has reached maximum participants")
@@ -98,26 +106,26 @@ class Ticket(models.Model):
 
     def confirm(self):
         """Confirm the ticket"""
-        if self.status == self.STATUS_PENDING:
-            self.status = self.STATUS_CONFIRMED
+        if self.status == TicketStatus.PENDING.value:
+            self.status = TicketStatus.CONFIRMED.value
             self.save()
             return True
         return False
 
     def cancel(self):
         """Cancel the ticket"""
-        if self.status in [self.STATUS_PENDING, self.STATUS_CONFIRMED]:
-            self.status = self.STATUS_CANCELLED
+        if self.status in [TicketStatus.PENDING.value, TicketStatus.CONFIRMED.value]:
+            self.status = TicketStatus.CANCELLED.value
             self.save()
             return True
         return False
 
     def is_valid(self):
         """Check if ticket is valid"""
-        if self.status != self.STATUS_CONFIRMED:    
+        if self.status != TicketStatus.CONFIRMED.value:
             return False
         if self.expires_at and self.expires_at < timezone.now():
-            self.status = self.STATUS_EXPIRED
+            self.status = TicketStatus.EXPIRED.value
             self.save()
             return False
         return True
