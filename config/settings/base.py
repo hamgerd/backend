@@ -19,6 +19,7 @@ LOCAL_APPS = [
 THIRD_PARY_APPS = [
     "drf_yasg",
     "rest_framework",
+    "corsheaders",
 ]
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
