@@ -15,7 +15,7 @@ x-environment: &DJANGO_VARS
 services:
   backend:
     build: .
-    command: sh -c "make collectstatic && make run"
+    command: sh -c "make collectstatic && make run address=0.0.0.0:8000"
     volumes:
       - .:/app
       - /app/.venv
