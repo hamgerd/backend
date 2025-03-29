@@ -9,7 +9,7 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from config.settings.base import VERIFICATION_DOMAIN
 from core.tasks.email import send_email
-from users.serializer import UserRegistrationSerializer
+from users.serializers.user import UserRegistrationSerializer
 from verification.choices import VerificationTypeChoices
 from verification.models import VerificationToken
 

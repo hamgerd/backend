@@ -1,16 +1,20 @@
 from drf_yasg.openapi import Schema
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from rest_framework.views import APIView
 
+from users.serializers.verification import EmailVerificationSerializer
 from verification.models import VerificationToken
 
 
-class EmailVerifyView(APIView):
+class EmailVerifyView(GenericAPIView):
     """
     Verify email using the token
     """
+
+    serializer_class = EmailVerificationSerializer
 
     @swagger_auto_schema(
         responses={
@@ -23,14 +27,17 @@ class EmailVerifyView(APIView):
         }
     )
     def get(self, request, token: str):
-        token = VerificationToken.objects.filter(token=token).first()
-        if not token:
-            return Response({"error": "Invalid token"}, status=HTTP_400_BAD_REQUEST)
-        if not token.is_valid:
-            return Response({"error": "Token expired"}, status=HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data={"token": token})
+        serializer.is_valid(raise_exception=True)
+        token_instance = VerificationToken.objects.filter(token=serializer.validated_data["token"]).first()
 
-        token.user.is_active = True
-        token.user.save()
-        token.delete()
+        if not token_instance:
+            raise ValidationError({"error": "Token invalid or expired"})
+        if token_instance.is_expired:
+            raise ValidationError({"error": "Token expired"})
+
+        token_instance.user.is_active = True
+        token_instance.user.save()
+        token_instance.delete()
 
         return Response({"message": "Email verified successfully"}, status=HTTP_200_OK)

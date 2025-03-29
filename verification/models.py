@@ -28,11 +28,11 @@ class VerificationToken(models.Model):
         return f"{self.user}'s {self.type} token"
 
     @property
-    def is_valid(self):
+    def is_expired(self):
         """
         Checks if the token is not expired
         """
-        return self.created_at + self.valid_for > timezone.now()
+        return self.created_at + self.valid_for < timezone.now()
 
     class Meta:
         ordering = ["-created_at"]
