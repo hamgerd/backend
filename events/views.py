@@ -1,29 +1,28 @@
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from django.shortcuts import get_object_or_404
+from rest_framework import permissions, viewsets
 
-from .models import Event, Ticket, TicketType
-from .serializer import EventSerializer, EventCreateSerializer
 from organization.models import Organization
+
+from .models import Event, Ticket
+from .serializer import EventCreateSerializer, EventSerializer
+
 
 class OrganizationOwnerPermission(permissions.BasePermission):
     """
     Custom permission to only allow owners of an organization to modify it.
     """
+
     def has_permission(self, request, view):
         # Allow read operations for authenticated users
         if request.method in permissions.SAFE_METHODS:
             return True
-            
+
         # For write operations, check if organization is provided
-        if not request.data.get('organization'):
+        if not request.data.get("organization"):
             return False
-            
+
         # Get the organization
         try:
-            organization = Organization.objects.get(id=request.data['organization'])
+            organization = Organization.objects.get(id=request.data["organization"])
             return organization.owner == request.user
         except Organization.DoesNotExist:
             return False
@@ -32,7 +31,7 @@ class OrganizationOwnerPermission(permissions.BasePermission):
         # Allow read operations for authenticated users
         if request.method in permissions.SAFE_METHODS:
             return True
-            
+
         # For write operations, check if user owns the organization
         return obj.organization.owner == request.user
 
@@ -46,8 +45,6 @@ class TicketOwnerPermission(permissions.BasePermission):
         # Allow read operations for authenticated users
         if request.method in permissions.SAFE_METHODS:
             return True
-
-
 
         # For write operations, check if organization is provided
         if not view.kwargs["event_id"]:
@@ -80,10 +77,10 @@ class EventViewSet(viewsets.ModelViewSet):
             case _:
                 return EventSerializer
 
+
 class TicketViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         event_id = self.kwargs["event_id"]
         return Ticket.objects.filter(event=event_id)
-

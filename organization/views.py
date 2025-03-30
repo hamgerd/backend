@@ -1,14 +1,14 @@
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, status
 from rest_framework.decorators import api_view
-from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
-from django.shortcuts import get_object_or_404
 
 from .models import Organization
-from .serializer import OrganizationSerializer, OrganizationCreateSerializer
+from .serializer import OrganizationCreateSerializer, OrganizationSerializer
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def get_org(request, org_id):
     """
     Retrieve a specific organization by ID
@@ -16,6 +16,7 @@ def get_org(request, org_id):
     organization = get_object_or_404(Organization, id=org_id)
     serializer = OrganizationSerializer(organization)
     return Response(serializer.data)
+
 
 class OrganizationListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -36,10 +37,7 @@ class OrganizationListView(APIView):
         serializer = OrganizationCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(owner=request.user)
-            return Response(
-                self.serializer_class(serializer.instance).data,
-                status=status.HTTP_201_CREATED
-            )
+            return Response(self.serializer_class(serializer.instance).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, org_id):
@@ -47,25 +45,17 @@ class OrganizationListView(APIView):
         Update an organization.
         """
         organization = get_object_or_404(Organization, id=org_id)
-        
+
         # Check if user is the owner of the organization
         if organization.owner != request.user:
             return Response(
-                {"detail": "You do not have permission to update this organization."},
-                status=status.HTTP_403_FORBIDDEN
+                {"detail": "You do not have permission to update this organization."}, status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = OrganizationCreateSerializer(
-            organization,
-            data=request.data,
-            partial=True
-        )
+        serializer = OrganizationCreateSerializer(organization, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                self.serializer_class(serializer.instance).data,
-                status=status.HTTP_200_OK
-            )
+            return Response(self.serializer_class(serializer.instance).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, org_id):
@@ -73,12 +63,11 @@ class OrganizationListView(APIView):
         Delete an organization.
         """
         organization = get_object_or_404(Organization, id=org_id)
-        
+
         # Check if user is the owner of the organization
         if organization.owner != request.user:
             return Response(
-                {"detail": "You do not have permission to delete this organization."},
-                status=status.HTTP_403_FORBIDDEN
+                {"detail": "You do not have permission to delete this organization."}, status=status.HTTP_403_FORBIDDEN
             )
 
         organization.delete()
