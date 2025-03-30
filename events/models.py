@@ -1,31 +1,30 @@
-from time import timezone
 from enum import Enum
+from time import timezone
 
-from django.db import models
-from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
+from django.db import models
 from django.utils import timezone
+
 from config.settings.base import AUTH_USER_MODEL
 from organization.models import Organization
 
+
 class TicketStatus(Enum):
-    PENDING = 'pending'
-    CONFIRMED = 'confirmed'
-    CANCELLED = 'cancelled'
-    EXPIRED = 'expired'
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
 
     @classmethod
     def choices(cls):
         return [(status.value, status.name.title()) for status in cls]
 
+
 class Event(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name='events'
-    )
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="events")
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     location = models.CharField(max_length=255)
@@ -34,9 +33,9 @@ class Event(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-start_date']
-        verbose_name = 'Event'
-        verbose_name_plural = 'Events'
+        ordering = ["-start_date"]
+        verbose_name = "Event"
+        verbose_name_plural = "Events"
 
     def __str__(self):
         return f"{self.title} - {self.organization.name}"
@@ -49,10 +48,7 @@ class Event(models.Model):
     @classmethod
     def get_events_by_organization(cls, organization_id):
         """Return all events for a specific organization"""
-        return cls.objects.filter(
-            organization_id=organization_id,
-            is_active=True
-        )
+        return cls.objects.filter(organization_id=organization_id, is_active=True)
 
     @property
     def max_participants(self):
@@ -60,34 +56,27 @@ class Event(models.Model):
 
 
 class TicketType(models.Model):
-    title = models.CharField(256)
+    title = models.CharField(max_length=256)
     description = models.TextField
-    max_participants = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)],
-        null=True,
-        blank=True
-    )
+    max_participants = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
     # price = models.PositiveIntegerField()
+
 
 class Ticket(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
     ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE, related_name="tickets")
-    status = models.CharField(
-        max_length=20,
-        choices=TicketStatus.choices(),
-        default=TicketStatus.PENDING.value
-    )
+    status = models.CharField(max_length=20, choices=TicketStatus.choices(), default=TicketStatus.PENDING.value)
     ticket_number = models.CharField(max_length=50, unique=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'Ticket'
-        verbose_name_plural = 'Tickets'
-        unique_together = ['user', 'ticket_type']
+        ordering = ["-created_at"]
+        verbose_name = "Ticket"
+        verbose_name_plural = "Tickets"
+        unique_together = ["user", "ticket_type"]
 
     def __str__(self):
         return f"Ticket {self.ticket_number} - {self.event.title}"
@@ -96,11 +85,11 @@ class Ticket(models.Model):
         """Validate ticket data"""
         if self.event.start_date < timezone.now():
             raise ValidationError("Cannot create ticket for past events")
-        
+
         if self.event.max_participants:
-            confirmed_tickets = self.event.tickets.filter(
-                status=TicketStatus.CONFIRMED.value
-            ).exclude(id=self.id).count()
+            confirmed_tickets = (
+                self.event.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
+            )
             if confirmed_tickets >= self.event.max_participants:
                 raise ValidationError("Event has reached maximum participants")
 

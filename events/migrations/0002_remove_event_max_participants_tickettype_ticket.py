@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             name="TicketType",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("title", models.CharField(verbose_name=256)),
+                ("title", models.CharField(max_length=256)),
                 (
                     "max_participants",
                     models.PositiveIntegerField(
