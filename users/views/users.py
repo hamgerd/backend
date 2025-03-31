@@ -13,7 +13,7 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from config.settings.base import EMAIL_VERIFICATION_URL, PASSWORD_RESET_URL
 from core.tasks.email import send_email
-from users.serializers.user import PasswordResetRequestSerializer, UserRegistrationSerializer
+from users.serializers.user import PasswordResetRequestSerializer, PasswordResetSerializer, UserRegistrationSerializer
 from verification.choices import VerificationTypeChoices
 from verification.models import VerificationToken
 
@@ -117,4 +117,48 @@ class PasswordResetRequestView(GenericAPIView):
                 },
             )
             return Response({"message": "Password reset email sent"}, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetView(GenericAPIView):
+    """
+    Password reset view
+    """
+
+    serializer_class = PasswordResetSerializer
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        responses={
+            HTTP_201_CREATED: Schema(
+                type="object", properties={"message": Schema(type="string", description="Success message")}
+            ),
+            HTTP_400_BAD_REQUEST: Schema(
+                type="object",
+                properties={
+                    "error": Schema(type="string", description="Error message"),
+                    "errors": Schema(type="object", additional_properties=Schema(type="string")),
+                },
+            ),
+        }
+    )
+    @transaction.atomic
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            token = serializer.validated_data["token"]
+            password = serializer.validated_data["password"]
+
+            try:
+                token_instance = VerificationToken.objects.get(token=token)
+            except VerificationToken.DoesNotExist as e:
+                raise ValidationError({"error": "Token invalid or expired"}) from e
+            if token_instance.is_expired:
+                raise ValidationError({"error": "Token expired"})
+
+            token_instance.user.set_password(password)
+            token_instance.user.save()
+            token_instance.delete()
+            return Response({"message": "Password changes successfully"}, status=HTTP_201_CREATED)
+
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)

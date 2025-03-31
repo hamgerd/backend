@@ -22,3 +22,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(help_text="The email address of the user requesting a password reset")
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    token = serializers.CharField(help_text="Password reset token send by email")
+    password = serializers.CharField(write_only=True)
