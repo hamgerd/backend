@@ -1,10 +1,12 @@
-from rest_framework import permissions, viewsets
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 
+from .models import Event, Ticket, TicketType
+from .serializer import EventSerializer, EventCreateSerializer, TicketSerializer, TicketTypeSerializer
 from organization.models import Organization
-
-from .models import Event, Ticket
-from .serializer import EventCreateSerializer, EventSerializer
-
 
 class OrganizationOwnerPermission(permissions.BasePermission):
     """
@@ -84,3 +86,11 @@ class TicketViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         event_id = self.kwargs["event_id"]
         return Ticket.objects.filter(event=event_id)
+
+    def get_serializer_class(self):
+        match self.action:
+            case "create":
+                return TicketSerializer
+            case _:
+                return TicketSerializer
+
