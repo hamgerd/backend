@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from django.contrib.auth import get_user_model
 from django.db import transaction
 from drf_yasg.openapi import Schema
 from drf_yasg.utils import swagger_auto_schema
@@ -13,11 +12,10 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from config.settings.base import EMAIL_VERIFICATION_URL, PASSWORD_RESET_URL
 from core.tasks.email import send_email
+from users.models import User
 from users.serializers.user import PasswordResetRequestSerializer, PasswordResetSerializer, UserRegistrationSerializer
 from verification.choices import VerificationTypeChoices
 from verification.models import VerificationToken
-
-USER = get_user_model()
 
 
 class UserRegisterView(GenericAPIView):
@@ -38,28 +36,33 @@ class UserRegisterView(GenericAPIView):
     def post(self, request: Request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            user = serializer.create(serializer.validated_data)
-            valid_for = timedelta(minutes=15)
-            verification_token = VerificationToken.objects.create(
-                user=user,
-                type=VerificationTypeChoices.EMAIL,
-                valid_for=valid_for,
-            )
-            transaction.on_commit(
-                lambda: send_email.delay(
-                    subject="Verification Email",
-                    template_name="users/verification_email.html",
-                    from_email=None,
-                    recipient_list=[user.email],
-                    context={
-                        "title": "Verification Email",
-                        "token": verification_token.token,
-                        "email_verification_url": EMAIL_VERIFICATION_URL,
-                    },
-                )
-            )
+            user: User = serializer.create(serializer.validated_data)
+            verification_token = self.create_email_verification_token(user)
+            transaction.on_commit(lambda: self.send_verification_email(user, verification_token))
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def send_verification_email(user, verification_token):
+        send_email.delay(
+            subject="Verification Email",
+            template_name="users/verification_email.html",
+            from_email=None,
+            recipient_list=[user.email],
+            context={
+                "title": "Verification Email",
+                "token": verification_token.token,
+                "email_verification_url": EMAIL_VERIFICATION_URL,
+            },
+        )
+
+    @staticmethod
+    def create_email_verification_token(user):
+        return VerificationToken.objects.create(
+            user=user,
+            type=VerificationTypeChoices.EMAIL,
+            valid_for=timedelta(minutes=15),
+        )
 
 
 class PasswordResetRequestView(GenericAPIView):
@@ -89,35 +92,39 @@ class PasswordResetRequestView(GenericAPIView):
     )
     def post(self, request: Request):
         serializer = self.serializer_class(data=request.data)
+
         if serializer.is_valid():
             email = serializer.validated_data["email"]
-            valid_for = timedelta(minutes=15)
-            try:
-                user = USER.objects.get(email__iexact=email)
-            except USER.DoesNotExist as e:
-                raise ValidationError({"error": "User not found"}) from e
-
-            # Delete any existing password reset tokens for the user
-            VerificationToken.objects.filter(user=user, type=VerificationTypeChoices.PASSWORD_RESET).delete()
-            verification_token = VerificationToken.objects.create(
-                user=user,
-                type=VerificationTypeChoices.PASSWORD_RESET,
-                valid_for=valid_for,
-            )
-
-            send_email.delay(
-                subject="Password Reset",
-                template_name="users/password_reset_email.html",
-                from_email=None,
-                recipient_list=[user.email],
-                context={
-                    "title": "Password Reset",
-                    "token": verification_token.token,
-                    "password_reset_url": PASSWORD_RESET_URL,
-                },
-            )
+            user = User.get_by_email(email)
+            verification_token = self.create_password_reset_token(user)
+            self.send_password_reset_email(user, verification_token)
             return Response({"message": "Password reset email sent"}, status=HTTP_201_CREATED)
+
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def send_password_reset_email(user, verification_token):
+        send_email.delay(
+            subject="Password Reset",
+            template_name="users/password_reset_email.html",
+            from_email=None,
+            recipient_list=[user.email],
+            context={
+                "title": "Password Reset",
+                "token": verification_token.token,
+                "password_reset_url": PASSWORD_RESET_URL,
+            },
+        )
+
+    @staticmethod
+    def create_password_reset_token(user):
+        VerificationToken.objects.filter(user=user, type=VerificationTypeChoices.PASSWORD_RESET).delete()
+
+        return VerificationToken.objects.create(
+            user=user,
+            type=VerificationTypeChoices.PASSWORD_RESET,
+            valid_for=timedelta(minutes=15),
+        )
 
 
 class PasswordResetView(GenericAPIView):
@@ -153,6 +160,7 @@ class PasswordResetView(GenericAPIView):
                 token_instance = VerificationToken.objects.get(token=token)
             except VerificationToken.DoesNotExist as e:
                 raise ValidationError({"error": "Token invalid or expired"}) from e
+
             if token_instance.is_expired:
                 raise ValidationError({"error": "Token expired"})
 
