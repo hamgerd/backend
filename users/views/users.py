@@ -91,31 +91,30 @@ class PasswordResetRequestView(GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data["email"]
-            user = USER.objects.get(email__iexact=email)
+            valid_for = timedelta(minutes=15)
+            try:
+                user = USER.objects.get(email__iexact=email)
+            except USER.DoesNotExist as e:
+                raise ValidationError({"error": "User not found"}) from e
 
-            if user:
-                valid_for = timedelta(minutes=15)
+            # Delete any existing password reset tokens for the user
+            VerificationToken.objects.filter(user=user, type=VerificationTypeChoices.PASSWORD_RESET).delete()
+            verification_token = VerificationToken.objects.create(
+                user=user,
+                type=VerificationTypeChoices.PASSWORD_RESET,
+                valid_for=valid_for,
+            )
 
-                # Delete any existing password reset tokens for the user
-                VerificationToken.objects.filter(user=user, type=VerificationTypeChoices.PASSWORD_RESET).delete()
-                verification_token = VerificationToken.objects.create(
-                    user=user,
-                    type=VerificationTypeChoices.PASSWORD_RESET,
-                    valid_for=valid_for,
-                )
-
-                send_email.delay(
-                    subject="Password Reset",
-                    template_name="users/password_reset_email.html",
-                    from_email=None,
-                    recipient_list=[user.email],
-                    context={
-                        "title": "Password Reset",
-                        "token": verification_token.token,
-                        "password_reset_url": PASSWORD_RESET_URL,
-                    },
-                )
-                return Response({"message": "Password reset email sent"}, status=HTTP_201_CREATED)
-            else:
-                raise ValidationError({"error": "User not found"})
+            send_email.delay(
+                subject="Password Reset",
+                template_name="users/password_reset_email.html",
+                from_email=None,
+                recipient_list=[user.email],
+                context={
+                    "title": "Password Reset",
+                    "token": verification_token.token,
+                    "password_reset_url": PASSWORD_RESET_URL,
+                },
+            )
+            return Response({"message": "Password reset email sent"}, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
