@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
-from config.settings.base import VERIFICATION_DOMAIN
+from config.settings.base import EMAIL_VERIFICATION_URL
 from core.tasks.email import send_email
 from users.serializers.user import UserRegistrationSerializer
 from verification.choices import VerificationTypeChoices
@@ -48,7 +48,7 @@ class UserRegisterView(GenericAPIView):
                         "title": "Verification Email",
                         "token": verification_token.token,
                         "expiration": valid_for.total_seconds(),
-                        "domain": VERIFICATION_DOMAIN,
+                        "domain": EMAIL_VERIFICATION_URL,
                     },
                 )
             )

@@ -10,7 +10,7 @@ x-environment: &DJANGO_VARS
   MINIO_STORAGE_ENDPOINT: http://localhost:9000
   MINIO_STORAGE_ACCESS_KEY: minio
   MINIO_STORAGE_SECRET_KEY: minio123
-  VERIFICATION_DOMAIN: https://example.com
+  EMAIL_VERIFICATION_URL: https://example.com
 
 services:
   backend:
