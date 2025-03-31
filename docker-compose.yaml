@@ -11,6 +11,7 @@ x-environment: &DJANGO_VARS
   MINIO_STORAGE_ACCESS_KEY: minio
   MINIO_STORAGE_SECRET_KEY: minio123
   EMAIL_VERIFICATION_URL: https://example.com
+  PASSWORD_RESET_URL: http://example.com/password-reset
 
 services:
   backend:

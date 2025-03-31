@@ -18,3 +18,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = USER
         fields = ["username", "email", "password"]
         extra_kwargs = {"password": {"write_only": True}}
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(help_text="The email address of the user requesting a password reset")

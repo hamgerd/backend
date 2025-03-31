@@ -30,7 +30,7 @@ class VerificationToken(models.Model):
     @property
     def is_expired(self):
         """
-        Checks if the token is not expired
+        Checks if the token is expired
         """
         return self.created_at + self.valid_for < timezone.now()
 
