@@ -134,6 +134,12 @@ DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 CELERY_BROKER_URL = config("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", None)
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BEAT_SCHEDULE = {
+    "auto_delete_expired_verification_tokens": {
+        "task": "verification.tasks.auto_delete_expired_verification_tokens",
+        "schedule": timedelta(minutes=15),
+    },
+}
 
 # Minio
 AWS_S3_ENDPOINT_URL = config("MINIO_STORAGE_ENDPOINT")

@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.db import transaction
+from django.utils import timezone
 from drf_yasg.openapi import Schema
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import ValidationError
@@ -61,7 +62,7 @@ class UserRegisterView(GenericAPIView):
         return VerificationToken.objects.create(
             user=user,
             type=VerificationTypeChoices.EMAIL,
-            valid_for=timedelta(minutes=15),
+            expire_at=timezone.now() + timedelta(minutes=15),
         )
 
 
@@ -123,7 +124,7 @@ class PasswordResetRequestView(GenericAPIView):
         return VerificationToken.objects.create(
             user=user,
             type=VerificationTypeChoices.PASSWORD_RESET,
-            valid_for=timedelta(minutes=15),
+            expire_at=timezone.now() + timedelta(minutes=15),
         )
 
 

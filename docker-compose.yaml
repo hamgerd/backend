@@ -48,6 +48,20 @@ services:
       smtp4dev:
         condition: service_started
 
+  beat:
+    build: .
+    command: uv run celery -A config beat -l INFO
+    volumes:
+      - .:/app
+      - /app/.venv
+    environment:
+      *DJANGO_VARS
+    depends_on:
+      redis:
+        condition: service_started
+      smtp4dev:
+        condition: service_started
+
   redis:
     image: redis:7.4.2-alpine
     ports:
