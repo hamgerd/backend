@@ -21,6 +21,9 @@ class TicketViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Ticket.objects.none()
+
         event_id = self.kwargs["event_id"]
         return Ticket.objects.filter(event=event_id)
 
