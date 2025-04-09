@@ -1,4 +1,6 @@
 from rest_framework import permissions, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .models import Event, Ticket
 from .premissions import OrganizationOwnerPermission
@@ -15,6 +17,13 @@ class EventViewSet(viewsets.ModelViewSet):
                 return EventCreateSerializer
             case _:
                 return EventSerializer
+
+    @action(methods=["get"], detail=False)
+    def featured(self, request):
+        """Get all upcoming events"""
+        queryset = Event.get_featured_events()
+        serializer = EventSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class TicketViewSet(viewsets.ModelViewSet):

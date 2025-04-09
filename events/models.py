@@ -50,6 +50,11 @@ class Event(models.Model):
         """Return all events for a specific organization"""
         return cls.objects.filter(organization_id=organization_id, is_active=True)
 
+    @classmethod
+    def get_featured_events(cls):
+        """Return all featured events"""
+        return cls.objects.filter(is_active=True, start_date__gte=timezone.now())[:10]
+
     @property
     def max_participants(self):
         return sum([item.max_participants for item in self.ticket_types.all()])
