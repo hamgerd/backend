@@ -92,6 +92,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -149,11 +151,15 @@ AWS_SECRET_ACCESS_KEY = config("MINIO_STORAGE_SECRET_KEY")
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {"bucket_name": config("MINIO_STORAGE_BUCKET_NAME", "static")},
+        "OPTIONS": {
+            "bucket_name": config("MINIO_DEFAULT_STORAGE_BUCKET_NAME", "media"),
+            "default_acl": "public-read",
+            "file_overwrite": False,
+        },
     },
     "staticfiles": {
         "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {"bucket_name": config("MINIO_STORAGE_BUCKET_NAME", "static")},
+        "OPTIONS": {"bucket_name": config("MINIO_STATIC_STORAGE_BUCKET_NAME", "static")},
     },
 }
 

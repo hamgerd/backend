@@ -1,5 +1,4 @@
 from enum import Enum
-from time import timezone
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -21,10 +20,26 @@ class TicketStatus(Enum):
         return [(status.value, status.name.title()) for status in cls]
 
 
+class EventCategory(models.Model):
+    title = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["title"]
+        verbose_name = "Event Category"
+        verbose_name_plural = "Event Categories"
+
+    def __str__(self):
+        return self.title
+
+
 class Event(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="events")
+    category = models.ForeignKey(EventCategory, on_delete=models.CASCADE, related_name="events", null=True, blank=True)
+    image = models.ImageField(upload_to="events/images/", null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     location = models.CharField(max_length=255)

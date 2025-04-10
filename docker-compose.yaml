@@ -97,5 +97,5 @@ services:
     entrypoint: >
       /bin/sh -c "
       until (/usr/bin/mc alias set myminio http://minio:9000 minio minio123) do echo 'waiting for minio'; sleep 3; done;
-      /usr/bin/mc mb --ignore-existing myminio/static;
+      /usr/bin/mc mb --ignore-existing myminio/static myminio/media;
       "
