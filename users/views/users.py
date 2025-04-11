@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from config.settings.base import EMAIL_VERIFICATION_URL, PASSWORD_RESET_URL
 from core.tasks.email import send_email
@@ -38,13 +39,19 @@ class UserRegisterView(GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             user: User = serializer.create(serializer.validated_data)
-            verification_token = self.create_email_verification_token(user)
-            transaction.on_commit(lambda: self.send_verification_email(user, verification_token))
+            self._add_refresh_token_to_serializer_context(serializer, user)
+            verification_token = self._create_email_verification_token(user)
+            transaction.on_commit(lambda: self._send_verification_email(user, verification_token))
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     @staticmethod
-    def send_verification_email(user, verification_token):
+    def _add_refresh_token_to_serializer_context(serializer, user):
+        token = RefreshToken.for_user(user)
+        serializer.context["refresh_token"] = str(token)
+
+    @staticmethod
+    def _send_verification_email(user, verification_token):
         send_email.delay(
             subject="Verification Email",
             template_name="users/verification_email.html",
@@ -58,7 +65,7 @@ class UserRegisterView(GenericAPIView):
         )
 
     @staticmethod
-    def create_email_verification_token(user):
+    def _create_email_verification_token(user):
         return VerificationToken.objects.create(
             user=user,
             type=VerificationTypeChoices.EMAIL,
