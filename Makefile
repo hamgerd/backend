@@ -1,4 +1,4 @@
-.PHONY: migrations migrate run shell superuser help
+.PHONY: migrations migrate run shell superuser collectstatic worker codegen swagger help
 
 python3 = uv run python3
 
