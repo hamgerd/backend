@@ -1,2 +1,2 @@
-- [ ] get users data and organization
+- [X] get users data and organization
 - [ ] get users ticket

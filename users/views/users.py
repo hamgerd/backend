@@ -6,7 +6,7 @@ from drf_yasg.openapi import Schema
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
@@ -15,9 +15,19 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from config.settings.base import EMAIL_VERIFICATION_URL, PASSWORD_RESET_URL
 from core.tasks.email import send_email
 from users.models import User
-from users.serializers.user import PasswordResetRequestSerializer, PasswordResetSerializer, UserRegistrationSerializer
+from users.serializers.me import UserMESerializer
+from users.serializers.user import PasswordResetRequestSerializer, PasswordResetSerializer, UserRegistrationSerializer,UserSerializer
 from verification.choices import VerificationTypeChoices
 from verification.models import VerificationToken
+
+
+class UserMeView(GenericAPIView):
+    serializer_class = UserMESerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserMESerializer(request.user)
+        return Response(serializer.data)
 
 
 class UserRegisterView(GenericAPIView):
