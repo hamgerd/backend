@@ -4,6 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 from drf_yasg.openapi import Schema
 from drf_yasg.utils import swagger_auto_schema
+from events.models import Ticket
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -19,6 +20,7 @@ from users.serializers.me import UserMESerializer
 from users.serializers.user import PasswordResetRequestSerializer, PasswordResetSerializer, UserRegistrationSerializer,UserSerializer
 from verification.choices import VerificationTypeChoices
 from verification.models import VerificationToken
+from events.serializer import TicketSerializer
 
 
 class UserMeView(GenericAPIView):
@@ -29,6 +31,14 @@ class UserMeView(GenericAPIView):
         serializer = UserMESerializer(request.user)
         return Response(serializer.data)
 
+class UserTicketsView(GenericAPIView):
+    serializer_class = TicketSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_tickets = Ticket.objects.select_related('event').filter(user=request.user)
+        serializer = self.get_serializer(user_tickets, many=True)
+        return Response(serializer.data)
 
 class UserRegisterView(GenericAPIView):
     """
