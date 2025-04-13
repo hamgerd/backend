@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,9 +19,16 @@ def get_org(request, org_id):
     return Response(serializer.data)
 
 
-class OrganizationListView(APIView):
+class OrganizationListView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrganizationSerializer
+
+    def get_serializer_class(self):
+        match self.request.method:
+            case "POST":
+                return OrganizationCreateSerializer
+            case _:
+                return OrganizationSerializer
 
     def get(self, request, format=None):
         """
