@@ -28,6 +28,9 @@ superuser:
 collectstatic:
 	$(python3) manage.py collectstatic --no-input
 
+test:
+	$(python3) manage.py test
+
 worker:
 	uv run celery -A config worker -l info
 
