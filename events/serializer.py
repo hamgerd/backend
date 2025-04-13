@@ -27,24 +27,29 @@ class EventSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "updated_at"]
 
+class TicketTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TicketType
+        fields = ["id", "title", "description", "max_participants"]
 
 class EventCreateSerializer(serializers.ModelSerializer):
+    ticket_types = TicketTypeSerializer(many=True)
+
     class Meta:
         model = Event
         fields = [
             "title",
             "description",
             "organization",
+            "image",
+            "category",
             "start_date",
             "end_date",
             "location",
+            "ticket_types",
         ]
 
 
-class TicketTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TicketType
-        fields = ["id", "title", "description", "max_participants"]
 
 
 class TicketSerializer(serializers.ModelSerializer):

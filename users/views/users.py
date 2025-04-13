@@ -37,7 +37,7 @@ class UserTicketsView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user_tickets = Ticket.objects.select_related('event').filter(user=request.user)
+        user_tickets = Ticket.objects.select_related('user').filter(user=request.user)
         serializer = self.get_serializer(user_tickets, many=True)
         return Response(serializer.data)
 
