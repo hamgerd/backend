@@ -27,6 +27,7 @@ class UserMeView(GenericAPIView):
     serializer_class = UserMESerializer
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(responses={200: UserMESerializer})
     def get(self, request):
         serializer = UserMESerializer(request.user)
         return Response(serializer.data)
