@@ -20,4 +20,5 @@ dependencies = [
     "pillow>=11.1.0",
     "django-extensions>=4.1",
     "factory-boy>=3.3.3",
+    "identiconify>=0.1.0",
 ]
