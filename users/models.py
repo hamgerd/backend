@@ -1,12 +1,10 @@
-import hashlib
-from io import BytesIO
-
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext
-from identiconify import PilIdenticon
 from rest_framework.exceptions import ValidationError
+
+from core.utils.identicon import add_profile_picture
 
 
 class User(AbstractUser):
@@ -15,15 +13,8 @@ class User(AbstractUser):
     profile_picture = models.ImageField(upload_to="profile_pictures/", blank=True)
 
     def save(self, *args, **kwargs):
-        self._add_profile_picture()
+        add_profile_picture(self)
         super().save(*args, **kwargs)
-
-    def _add_profile_picture(self):
-        identicon = PilIdenticon().generate(self.username)
-        buffer = BytesIO()
-        identicon.save(buffer, format="PNG")
-        buffer.seek(0)
-        self.profile_picture.save(f"{hashlib.md5(self.username.encode()).hexdigest()}.png", buffer, save=False)
 
     @classmethod
     def get_by_email(cls, email: str):

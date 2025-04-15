@@ -1,10 +1,14 @@
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
 from config.settings.base import AUTH_USER_MODEL
+from core.utils.identicon import add_profile_picture
 
 
 class Organization(models.Model):
     name = models.CharField(max_length=255)
+    username = models.CharField(max_length=150, unique=True, validators=[UnicodeUsernameValidator()])
+    profile_picture = models.ImageField(upload_to="organization_profile_pictures/", blank=True)
     description = models.TextField(blank=True)
     email = models.EmailField(blank=True, null=True)
     owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="organizations")
@@ -15,6 +19,10 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        add_profile_picture(self)
+        super().save(*args, **kwargs)
 
     @classmethod
     def get_all_organizations(cls):
