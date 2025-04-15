@@ -19,3 +19,7 @@ REST_FRAMEWORK_BASE = {
 }
 
 REST_FRAMEWORK.update(REST_FRAMEWORK_BASE)
+
+INSTALLED_APPS += [
+    'django_extensions',
+]

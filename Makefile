@@ -37,3 +37,5 @@ codegen:
 swagger:
 	curl http://localhost:8000/swagger.json/ > swagger.json                                                                                                                              ─╯
 
+populate:
+	uv run python manage.py runscript populate

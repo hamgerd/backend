@@ -18,4 +18,6 @@ dependencies = [
     "django-storages[s3]>=1.14.5",
     "django-cors-headers>=4.7.0",
     "pillow>=11.1.0",
+    "django-extensions>=4.1",
+    "factory-boy>=3.3.3",
 ]
