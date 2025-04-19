@@ -3,7 +3,6 @@ from rest_framework import permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .models import Organization
 from .serializer import OrganizationCreateSerializer, OrganizationSerializer
@@ -22,6 +21,7 @@ def get_org(request, org_id):
 class OrganizationListView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrganizationSerializer
+    queryset = Organization.objects.all()
 
     def get_serializer_class(self):
         match self.request.method:
