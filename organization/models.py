@@ -1,4 +1,5 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 
 from config.settings.base import AUTH_USER_MODEL
@@ -7,7 +8,11 @@ from core.utils.identicon import add_profile_picture
 
 class Organization(models.Model):
     name = models.CharField(max_length=255)
-    username = models.CharField(max_length=150, unique=True, validators=[UnicodeUsernameValidator()])
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[UnicodeUsernameValidator(), MinLengthValidator(3, "Username must be at least 3 characters long")],
+    )
     profile_picture = models.ImageField(upload_to="organization_profile_pictures/", blank=True)
     description = models.TextField(blank=True)
     email = models.EmailField(blank=True, null=True)
