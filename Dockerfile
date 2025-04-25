@@ -10,6 +10,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.6.10 /uv /uvx /bin/
 COPY . .
 
 RUN useradd -ms /bin/bash neshast \
+    && chown -R neshast:neshast /app \
     && apt-get update \
     && apt-get install -y --no-install-recommends make \
     && rm -rf /var/lib/apt/lists/* \
