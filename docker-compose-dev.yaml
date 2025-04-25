@@ -1,26 +1,11 @@
-
-x-environment: &DJANGO_VARS
-  EMAIL_HOST: smtp4dev
-  EMAIL_PORT: 25
-  EMAIL_USE_TLS: "False"
-  DEFAULT_FROM_EMAIL: noreply<no_reply@domain.com>
-  CELERY_BROKER_URL: redis://redis:6379/0
-  CELERY_RESULT_BACKEND: redis://redis:6379/0
-  DJANGO_SETTINGS_MODULE: config.settings.development
-  MINIO_STORAGE_ENDPOINT: http://localhost:9000
-  MINIO_STORAGE_ACCESS_KEY: minio
-  MINIO_STORAGE_SECRET_KEY: minio123
-  EMAIL_VERIFICATION_URL: https://example.com
-  PASSWORD_RESET_URL: http://example.com/password-reset
-
 services:
   backend:
     build: .
     command: sh -c "make run address=0.0.0.0:8000"
     volumes:
       - .:/app
-    environment:
-      *DJANGO_VARS
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     depends_on:
@@ -32,8 +17,8 @@ services:
     command: uv run celery -A config worker -l INFO
     volumes:
       - .:/app
-    environment:
-      *DJANGO_VARS
+    env_file:
+      - .env
     depends_on:
       redis:
         condition: service_started
@@ -43,8 +28,8 @@ services:
     command: uv run celery -A config beat -l INFO
     volumes:
       - .:/app
-    environment:
-      *DJANGO_VARS
+    env_file:
+      - .env
     depends_on:
       redis:
         condition: service_started
