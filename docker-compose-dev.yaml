@@ -24,6 +24,9 @@ services:
   worker:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config worker -l INFO
+    volumes:
+      - .:/app
+      - /app/.venv
     env_file:
       - .env
     depends_on:
@@ -37,6 +40,9 @@ services:
   beat:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config beat -l INFO
+    volumes:
+      - .:/app
+      - /app/.venv
     env_file:
       - .env
     depends_on:
