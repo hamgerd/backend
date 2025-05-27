@@ -21,12 +21,10 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # Sagger
-    path("swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
-    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
-    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
-    # apps
-    path("organization/", include("organization.urls")),
-    path("users/", include("users.urls", namespace="users")),
-    path("events/", include(events_router.urls)),
+    path("api/v1/organization/", include("organization.urls")),
+    path("api/v1/users/", include("users.urls", namespace="users")),
+    path("api/v1/events/", include(events_router.urls)),
+    path("api/v1/swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
+    path("api/v1/swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path("api/v1/redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
