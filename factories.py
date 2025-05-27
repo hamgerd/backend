@@ -1,20 +1,22 @@
 # factories.py
 
 import factory
+from django.utils import timezone
 from factory.django import DjangoModelFactory
 from faker import Faker
-from django.utils import timezone
-from users.models import User  # Update this to your actual user model path
+
 from organization.models import Organization
-from .models import Event, EventCategory, Ticket, TicketType, TicketStatus
+from users.models import User  # Update this to your actual user model path
+
+from .models import Event, EventCategory, Ticket, TicketStatus, TicketType
 
 fake = Faker()
+
 
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
 
-    username = factory.Faker("user_name")
     email = factory.Faker("email")
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")

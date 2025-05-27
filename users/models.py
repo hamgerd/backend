@@ -1,24 +1,31 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import PermissionsMixin
 from django.core.validators import RegexValidator
 from django.db import models
-from django.utils.translation import gettext
-from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 from core.utils.identicon import add_profile_picture
+from users.managers import CustomUserManager
 
 
-class User(AbstractUser):
-    email = models.EmailField(gettext("email address"), unique=True)
+class User(AbstractBaseUser, PermissionsMixin):
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
+    email = models.EmailField(unique=True)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(default=timezone.now)
     phone_number = models.CharField(max_length=11, blank=True, null=True, validators=[RegexValidator(r"^09\d{9}$")])
     profile_picture = models.ImageField(upload_to="profile_pictures/", blank=True)
 
-    def save(self, *args, **kwargs):
-        add_profile_picture(self)
-        super().save(*args, **kwargs)
+    objects = CustomUserManager()
 
-    @classmethod
-    def get_by_email(cls, email: str):
-        try:
-            return User.objects.get(email__iexact=email)
-        except User.DoesNotExist as e:
-            raise ValidationError({"error": "User not found"}) from e
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.email
+
+    def save(self, *args, **kwargs):
+        add_profile_picture(self, "email")
+        super().save(*args, **kwargs)

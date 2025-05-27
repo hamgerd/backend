@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.admin import ModelAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
 from .models import User
@@ -18,14 +18,14 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 @admin.register(User)
-class UserAdmin(UserAdmin):
+class UserAdmin(ModelAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
 
-    list_display = ["username", "email", "is_active"]
-    search_fields = ["username", "email"]
+    list_display = ["email", "is_active"]
+    search_fields = ["email"]
     fieldsets = (
-        (None, {"fields": ("username", "email", "password")}),
+        (None, {"fields": ("email", "password")}),
         ("Personal info", {"fields": ("first_name", "last_name", "phone_number")}),
         (
             "Permissions",
@@ -47,7 +47,7 @@ class UserAdmin(UserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("username", "email", "phone_number", "password1", "password2"),
+                "fields": ("email", "phone_number", "password1", "password2"),
             },
         ),
     )
