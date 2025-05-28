@@ -10,11 +10,11 @@ SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = []
 
 LOCAL_APPS = [
-    "core.apps.CoreConfig",
-    "organization.apps.OrganizationConfig",
-    "events.apps.EventsConfig",
-    "users.apps.UsersConfig",
-    "verification.apps.VerificationConfig",
+    "apps.core.apps.CoreConfig",
+    "apps.organizations.apps.OrganizationConfig",
+    "apps.events.apps.EventsConfig",
+    "apps.users.apps.UsersConfig",
+    "apps.verification.apps.VerificationConfig",
 ]
 THIRD_PARY_APPS = [
     "drf_yasg",
@@ -138,7 +138,7 @@ CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", None)
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BEAT_SCHEDULE = {
     "auto_delete_expired_verification_tokens": {
-        "task": "verification.tasks.auto_delete_expired_verification_tokens",
+        "task": "apps.verification.tasks.auto_delete_expired_verification_tokens",
         "schedule": timedelta(minutes=15),
     },
 }

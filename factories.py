@@ -5,10 +5,9 @@ from django.utils import timezone
 from factory.django import DjangoModelFactory
 from faker import Faker
 
-from organization.models import Organization
-from users.models import User  # Update this to your actual user model path
-
-from .models import Event, EventCategory, Ticket, TicketStatus, TicketType
+from apps.events.models import Event, EventCategory, Ticket, TicketStatus, TicketType
+from apps.organizations.models import Organization
+from apps.users.models import User  # Update this to your actual user model path
 
 fake = Faker()
 
