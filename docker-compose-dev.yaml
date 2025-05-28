@@ -1,6 +1,7 @@
 services:
   backend:
-    image: mirsobhan/neshast-backend:latest
+    build:
+        context: .
     command: sh -c "make collectstatic && make run address=0.0.0.0:8000"
     volumes:
       - .:/app
@@ -22,7 +23,8 @@ services:
       - neshast
 
   worker:
-    image: mirsobhan/neshast-backend:latest
+    build:
+      context: .
     command: uv run celery -A config worker -l INFO
     volumes:
       - .:/app
@@ -38,7 +40,8 @@ services:
       - neshast
 
   beat:
-    image: mirsobhan/neshast-backend:latest
+    build:
+      context: .
     command: uv run celery -A config beat -l INFO
     volumes:
       - .:/app
