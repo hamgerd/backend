@@ -1,5 +1,6 @@
 from enum import Enum
 
+from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -80,7 +81,7 @@ class TicketType(models.Model):
     description = models.TextField(blank=True)
     max_participants = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
-    price = models.PositiveIntegerField()
+    price = models.IntegerField(validators=[validators.MinValueValidator(0)])
 
 
 class Ticket(models.Model):
