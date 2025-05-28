@@ -27,13 +27,22 @@ class EventSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "updated_at"]
 
+
 class TicketTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketType
         fields = ["id", "title", "description", "max_participants"]
 
+
 class EventCreateSerializer(serializers.ModelSerializer):
     ticket_types = TicketTypeSerializer(many=True)
+
+    def create(self, validated_data):
+        ticket_types_data = validated_data.pop("ticket_types")
+        event = Event.objects.create(**validated_data)
+        for ticket_type_data in ticket_types_data:
+            TicketType.objects.create(event=event, **ticket_type_data)
+        return event
 
     class Meta:
         model = Event
@@ -48,8 +57,6 @@ class EventCreateSerializer(serializers.ModelSerializer):
             "location",
             "ticket_types",
         ]
-
-
 
 
 class TicketSerializer(serializers.ModelSerializer):

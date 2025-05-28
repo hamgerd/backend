@@ -77,10 +77,10 @@ class Event(models.Model):
 
 class TicketType(models.Model):
     title = models.CharField(max_length=256)
-    description = models.TextField
+    description = models.TextField(blank=True)
     max_participants = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
-    # price = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
 
 
 class Ticket(models.Model):
