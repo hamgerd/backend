@@ -5,8 +5,15 @@ from apps.organizations.serializer import OrganizationSerializer
 from .models import Event, Ticket, TicketType
 
 
+class TicketTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TicketType
+        fields = ["id", "title", "description", "max_participants", "price"]
+
+
 class EventSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
+    ticket_types = TicketTypeSerializer(many=True)
 
     class Meta:
         model = Event
@@ -15,6 +22,7 @@ class EventSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "organization",
+            "ticket_types",
             "image",
             "category",
             "start_date",
@@ -26,12 +34,6 @@ class EventSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
-
-
-class TicketTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TicketType
-        fields = ["id", "title", "description", "max_participants", "price"]
 
 
 class EventCreateSerializer(serializers.ModelSerializer):
