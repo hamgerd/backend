@@ -3,7 +3,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from apps.core.utils.identicon import add_profile_picture
+from apps.core.utils.identicon import add_default_image
 
 
 class Organization(models.Model):
@@ -27,5 +27,5 @@ class Organization(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.image:
-            add_profile_picture(self)
+            add_default_image(self)
         super().save(*args, **kwargs)

@@ -4,7 +4,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 
-from apps.core.utils.identicon import add_profile_picture
+from apps.core.utils.identicon import add_default_image
 from apps.users.managers import CustomUserManager
 
 
@@ -16,7 +16,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
     phone_number = models.CharField(max_length=11, blank=True, null=True, validators=[RegexValidator(r"^09\d{9}$")])
-    profile_picture = models.ImageField(upload_to="profile_pictures/", blank=True)
+    image = models.ImageField(upload_to="users/images/", blank=True)
 
     objects = CustomUserManager()
 
@@ -27,5 +27,5 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     def save(self, *args, **kwargs):
-        add_profile_picture(self, "email")
+        add_default_image(self, username_field_name="email")
         super().save(*args, **kwargs)
