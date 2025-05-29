@@ -1,10 +1,13 @@
 from django.urls import path
 
-from . import views
+from .views import (
+    OrganizationCreateView,
+    OrganizationDetailView,
+)
 
 app_name = "organizations"
 
 urlpatterns = [
-    path("", views.OrganizationListView.as_view(), name="organization-list"),
-    path("<int:org_id>", views.get_org, name="organization_entity"),
+    path("", OrganizationCreateView.as_view(), name="organization-list"),
+    path("<int:org_id>/", OrganizationDetailView.as_view(), name="organization-detail"),
 ]
