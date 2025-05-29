@@ -1,13 +1,12 @@
 from enum import Enum
 
+from django.conf import settings
 from django.core import validators
-from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 
-from apps.organizations.models import Organization
-from config.settings.base import AUTH_USER_MODEL
+from .event import Event
 
 
 class TicketStatus(Enum):
@@ -21,71 +20,16 @@ class TicketStatus(Enum):
         return [(status.value, status.name.title()) for status in cls]
 
 
-class EventCategory(models.Model):
-    title = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ["title"]
-        verbose_name = "Event Category"
-        verbose_name_plural = "Event Categories"
-
-    def __str__(self):
-        return self.title
-
-
-class Event(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="events")
-    category = models.ForeignKey(EventCategory, on_delete=models.CASCADE, related_name="events", null=True, blank=True)
-    image = models.ImageField(upload_to="events/images/", null=True, blank=True)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    location = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ["-start_date"]
-        verbose_name = "Event"
-        verbose_name_plural = "Events"
-
-    def __str__(self):
-        return f"{self.title} - {self.organization.name}"
-
-    @classmethod
-    def get_all_events(cls):
-        """Return all active events"""
-        return cls.objects.filter(is_active=True)
-
-    @classmethod
-    def get_events_by_organization(cls, organization_id):
-        """Return all events for a specific organization"""
-        return cls.objects.filter(organization_id=organization_id, is_active=True)
-
-    @classmethod
-    def get_featured_events(cls):
-        """Return all featured events"""
-        return cls.objects.filter(is_active=True, start_date__gte=timezone.now())[:10]
-
-    @property
-    def max_participants(self):
-        return sum([item.max_participants for item in self.ticket_types.all()])
-
-
 class TicketType(models.Model):
     title = models.CharField(max_length=256)
     description = models.TextField(blank=True)
-    max_participants = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=True, blank=True)
+    max_participants = models.PositiveIntegerField(validators=[validators.MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
     price = models.IntegerField(validators=[validators.MinValueValidator(0)])
 
 
 class Ticket(models.Model):
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
     ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE, related_name="tickets")
     status = models.CharField(max_length=20, choices=TicketStatus.choices(), default=TicketStatus.PENDING.value)
     ticket_number = models.CharField(max_length=50, unique=True)
