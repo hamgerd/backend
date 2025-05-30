@@ -6,7 +6,7 @@ from django.utils import timezone
 from apps.events.models import Ticket
 from config.settings.base import AUTH_USER_MODEL
 
-from utils import CurrencyEnum
+from .utils import CurrencyEnum
 
 class BillStatus(Enum):
     PENDING = "pending"
@@ -22,11 +22,11 @@ class TicketTransaction(models.Model):
     description = models.TextField()
     amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     currency = models.CharField(max_length=3,choices=CurrencyEnum.choices())
-    authority = models.CharField(null=True)
+    authority = models.CharField(null=True, max_length=128)
     status = models.CharField(max_length=20, choices=BillStatus.choices(), default=BillStatus.PENDING.name)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(default=timezone.now)
-    transaction_id = models.CharField(null=True)
+    transaction_id = models.CharField(null=True, max_length=128)
     ticket = models.OneToOneField(Ticket, on_delete=models.CASCADE,related_name="transactions", null=True)
 
 

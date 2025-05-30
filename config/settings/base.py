@@ -15,6 +15,7 @@ LOCAL_APPS = [
     "apps.events.apps.EventsConfig",
     "apps.users.apps.UsersConfig",
     "apps.verification.apps.VerificationConfig",
+    "apps.payment.apps.PaymentConfig",
 ]
 THIRD_PARY_APPS = [
     "drf_yasg",

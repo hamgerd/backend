@@ -3,7 +3,7 @@ from enum import Enum
 from pydantic import BaseModel, Field, HttpUrl, EmailStr
 from typing import Optional, Dict, Any
 import httpx
-from utils import CurrencyEnum
+from .utils import CurrencyEnum
 
 ZP_API_REQUEST = settings.PAYMENT_PORTAL_BASE_URL + 'pg/v4/payment/request.json'
 ZP_API_STARTPAY = settings.PAYMENT_PORTAL_BASE_URL + 'pg/StartPay/'
