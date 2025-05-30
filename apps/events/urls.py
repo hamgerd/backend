@@ -1,11 +1,18 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework_nested import routers
 
 from . import views
 
 app_name = "events"
 
-router = DefaultRouter()
-router.register("", views.EventViewSet, basename="events")
-router.register("<int:event_id>/tickets", views.TicketViewSet, basename="tickets")
+router = routers.SimpleRouter()
+router.register("", views.EventViewSet, basename="event")
 
-urlpatterns = router.urls
+events_router = routers.NestedSimpleRouter(router, "", lookup="event")
+
+events_router.register("tickets", views.TicketViewSet, basename="ticket")
+events_router.register("speakers", views.SpeakerViewSet, basename="speaker")
+
+urlpatterns = [
+    *router.urls,
+    *events_router.urls,
+]
