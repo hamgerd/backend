@@ -1,4 +1,6 @@
 from rest_framework import mixins, permissions, status, viewsets
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
@@ -87,3 +89,13 @@ class SpeakerViewSet(
             return Event.objects.filter(organization__owner=user).get(pk=event_pk)
         except Event.DoesNotExist:
             raise NotFound("Event was not found or doesn't belong to you.")
+
+
+class UserTicketsView(GenericAPIView):
+    serializer_class = TicketSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_tickets = Ticket.objects.select_related("user").filter(user=request.user)
+        serializer = self.get_serializer(user_tickets, many=True)
+        return Response(serializer.data)

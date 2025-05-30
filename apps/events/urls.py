@@ -10,6 +10,7 @@ router.register("", views.EventViewSet, basename="event")
 events_router = routers.NestedSimpleRouter(router, "", lookup="event")
 
 events_router.register("tickets", views.TicketViewSet, basename="ticket")
+events_router.register("tickets/me", views.UserTicketsView, basename="ticket")
 events_router.register("speakers", views.SpeakerViewSet, basename="speaker")
 
 urlpatterns = [

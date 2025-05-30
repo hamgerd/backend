@@ -2,12 +2,11 @@ from django.urls import path
 
 from apps.users.views import EmailVerifyView, UserRegisterView
 from apps.users.views.simplejwt import DecoratedTokenObtainPairView, DecoratedTokenRefreshView
-from apps.users.views.users import PasswordResetRequestView, PasswordResetView, UserMeView, UserTicketsView
+from apps.users.views.users import PasswordResetRequestView, PasswordResetView, UserMeView
 
 app_name = "users"
 urlpatterns = [
     path("me/", UserMeView.as_view(), name="me"),
-    path("tickets/", UserTicketsView.as_view(), name="tickets"),
     path("auth/token/", DecoratedTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", DecoratedTokenRefreshView.as_view(), name="token_refresh"),
     path("register/", UserRegisterView.as_view(), name="register"),

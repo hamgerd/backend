@@ -37,16 +37,6 @@ class UserMeView(GenericAPIView):
         return Response(serializer.data)
 
 
-class UserTicketsView(GenericAPIView):
-    serializer_class = TicketSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user_tickets = Ticket.objects.select_related("user").filter(user=request.user)
-        serializer = self.get_serializer(user_tickets, many=True)
-        return Response(serializer.data)
-
-
 class UserRegisterView(GenericAPIView):
     """
     Register a new user and send a verification email
