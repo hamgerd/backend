@@ -45,7 +45,9 @@ class TicketViewSet(viewsets.ModelViewSet):
                 return TicketSerializer
 
 
-class SpeakerViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class SpeakerViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
+):
     serializer_class = SpeakerSerializer
 
     def get_queryset(self):
