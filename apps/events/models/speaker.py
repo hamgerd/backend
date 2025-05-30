@@ -1,5 +1,6 @@
 from django.db import models
 
+from ...core.utils.identicon import add_default_image
 from .event import Event
 
 
@@ -12,3 +13,8 @@ class Speaker(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.image:
+            add_default_image(self, username_field_name="name")
+        super().save(*args, **kwargs)
