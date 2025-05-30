@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from .models import Event, Ticket
 from .premissions import OrganizationOwnerPermission
-from .serializer import EventCreateSerializer, EventSerializer, TicketSerializer
+from .serializers import EventCreateSerializer, EventSerializer, TicketSerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
