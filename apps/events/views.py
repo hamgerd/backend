@@ -1,12 +1,10 @@
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, status, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .models import Event, Speaker, Ticket
-from .premissions import OrganizationOwnerPermission
+from .permissions import IsOrganizationOwnerThroughPermission, OrganizationOwnerPermission
 from .serializers import EventCreateSerializer, EventSerializer, SpeakerSerializer, TicketSerializer
 
 
@@ -47,7 +45,7 @@ class TicketViewSet(viewsets.ModelViewSet):
                 return TicketSerializer
 
 
-class SpeakerViewSet(viewsets.ViewSet):
+class SpeakerViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = SpeakerSerializer
 
     def get_queryset(self):
@@ -60,44 +58,25 @@ class SpeakerViewSet(viewsets.ViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated(), IsOrganizationOwnerThroughPermission()]
 
-    @swagger_auto_schema(responses={200: SpeakerSerializer(many=True)})
-    def list(self, request, **kwargs):
-        """List all speakers for a specific event"""
-        queryset = self.get_queryset()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-
-    @swagger_auto_schema(responses={200: SpeakerSerializer(many=True)})
-    def retrieve(self, request, pk=None, **kwargs):
-        """List all speakers for a specific event"""
-        queryset = self.get_queryset()
-        speaker = get_object_or_404(queryset, pk=pk)
-        serializer = self.serializer_class(speaker)
-        return Response(serializer.data)
-
-    @swagger_auto_schema(request_body=SpeakerSerializer(), responses={200: SpeakerSerializer()})
     def create(self, request, event_pk=None):
         """Create a new speaker for a specific event"""
         event = self.get_event(request.user, event_pk)
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save(event=event)
-            return Response(serializer.data)
-        return Response(serializer, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(request_body=SpeakerSerializer(), responses={200: SpeakerSerializer()})
-    def partial_update(self, request, event_pk=None, pk=None):
+    def partial_update(self, request, **kwargs):
         """Update an existing speaker for a specific event"""
-        event = self.get_event(request.user, event_pk)
-        queryset = self.get_queryset()
-        speaker = get_object_or_404(queryset, pk=pk)
+        speaker = self.get_object()
         serializer = self.serializer_class(speaker, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def get_event(user, event_pk):
