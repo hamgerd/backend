@@ -2,6 +2,8 @@ import random
 import string
 from base import *
 
+ALLOWED_HOSTS += ["hamgerd.ir"]
+
 REST_FRAMEWORK_PRODUCTION = {
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
