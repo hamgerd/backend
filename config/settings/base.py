@@ -16,6 +16,7 @@ LOCAL_APPS = [
     "apps.users.apps.UsersConfig",
     "apps.verification.apps.VerificationConfig",
     "apps.payment.apps.PaymentConfig",
+    "apps.news.apps.NewsConfig",
 ]
 THIRD_PARY_APPS = [
     "drf_yasg",
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.syndication',
     *THIRD_PARY_APPS,
     *LOCAL_APPS,
 ]
