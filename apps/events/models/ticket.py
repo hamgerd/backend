@@ -1,12 +1,14 @@
 from enum import Enum
 
 from django.conf import settings
+from django.apps import apps
 from django.core import validators
 from django.db import models
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from .event import Event
+from ...payment.utils import CurrencyEnum
 
 
 class TicketStatus(Enum):
@@ -26,6 +28,7 @@ class TicketType(models.Model):
     max_participants = models.PositiveIntegerField(validators=[validators.MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
     price = models.IntegerField(validators=[validators.MinValueValidator(0)])
+    currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
 
 
 class Ticket(models.Model):
@@ -65,6 +68,15 @@ class Ticket(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
+        if self.transaction == None :
+            TicketTransaction = apps.get_model("events", "TicketTransaction")
+            TicketTransaction.objects.create(
+                ticket=self,
+                defaults={
+                    "amount": self.ticket_type.price,
+                    "currency": self.ticket_type.currency,
+                }
+            )
         super().save(*args, **kwargs)
 
     def confirm(self):
