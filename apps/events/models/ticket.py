@@ -52,10 +52,15 @@ class Ticket(models.Model):
             raise ValidationError("Cannot create ticket for past events")
 
         if self.event.max_participants:
+            pending_transactions_tickets = 0
             confirmed_tickets = (
                 self.event.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
             )
-            if confirmed_tickets >= self.event.max_participants:
+            if self.event.transactions:
+                pending_transactions_tickets = (
+                    self.event.transactions.filter(status="pending").exclude(id=self.id).count()
+                )
+            if confirmed_tickets + pending_transactions_tickets >= self.event.max_participants:
                 raise ValidationError("Event has reached maximum participants")
 
     def save(self, *args, **kwargs):
@@ -77,16 +82,6 @@ class Ticket(models.Model):
             self.save()
             return True
         return False
-
-    def is_valid(self):
-        """Check if ticket is valid"""
-        if self.status != TicketStatus.CONFIRMED.value:
-            return False
-        if self.expires_at and self.expires_at < timezone.now():
-            self.status = TicketStatus.EXPIRED.value
-            self.save()
-            return False
-        return True
 
     @classmethod
     def get_user_tickets(cls, user):
