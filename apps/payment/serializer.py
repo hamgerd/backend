@@ -11,7 +11,7 @@ class TicketTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketTransaction
         fields = [
-            'id',
+            'public_id',
             'description',
             'amount',
             'status',

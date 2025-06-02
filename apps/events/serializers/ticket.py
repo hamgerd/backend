@@ -6,7 +6,7 @@ from ..models import Ticket, TicketType
 class TicketTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketType
-        fields = ["id", "title", "description", "max_participants", "price"]
+        fields = ["public_id", "title", "description", "max_participants", "price"]
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -15,12 +15,12 @@ class TicketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ["id", "ticket_type", "status", "ticket_number", "notes", "event", "created_at", "updated_at","transactions"]
+        fields = ["public_id", "ticket_type", "status", "ticket_number", "notes", "event", "created_at", "updated_at","transactions"]
         read_only_fields = ["created_at", "updated_at"]
 
     def get_event(self, obj):
         return {
-            "id": obj.ticket_type.event.id,
+            "public_id": obj.ticket_type.event.public_id,
             "title": obj.ticket_type.event.title,
             "start_date": obj.ticket_type.event.start_date,
             "end_date": obj.ticket_type.event.end_date,
