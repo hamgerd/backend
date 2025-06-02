@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from apps.core.models import BaseModel
 from apps.events.models import Ticket, TicketStatus
 from .utils import CurrencyEnum
 
@@ -20,7 +21,7 @@ class BillStatus(Enum):
         return [(tag.name, tag.value) for tag in cls]
 
 
-class TicketTransaction(models.Model):
+class TicketTransaction(BaseModel):
     # description = models.TextField()
     amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())

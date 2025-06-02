@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
+from apps.core.models import BaseModel
 from apps.verification.choices import VerificationTypeChoices
 
 USER = get_user_model()
@@ -13,7 +14,7 @@ def generate_token():
     return randbytes(32).hex()
 
 
-class VerificationToken(models.Model):
+class VerificationToken(BaseModel):
     """
     Model to store verification tokens for users
     """

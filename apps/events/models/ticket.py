@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 from .event import Event
 from ...payment.utils import CurrencyEnum
+from apps.core.models import BaseModel
 
 
 class TicketStatus(Enum):
@@ -22,7 +23,7 @@ class TicketStatus(Enum):
         return [(status.value, status.name.title()) for status in cls]
 
 
-class TicketType(models.Model):
+class TicketType(BaseModel):
     title = models.CharField(max_length=256)
     description = models.TextField(blank=True)
     max_participants = models.PositiveIntegerField(validators=[validators.MinValueValidator(1)], null=True, blank=True)
@@ -31,7 +32,7 @@ class TicketType(models.Model):
     currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
 
 
-class Ticket(models.Model):
+class Ticket(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
     ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE, related_name="tickets")
     status = models.CharField(max_length=20, choices=TicketStatus.choices(), default=TicketStatus.PENDING.value)

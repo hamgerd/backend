@@ -1,10 +1,11 @@
 from django.db import models
 from django.utils import timezone
 
+from apps.core.models import BaseModel
 from apps.organizations.models import Organization
 
 
-class EventCategory(models.Model):
+class EventCategory(BaseModel):
     title = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -18,7 +19,7 @@ class EventCategory(models.Model):
         return self.title
 
 
-class Event(models.Model):
+class Event(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField()
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="events")
