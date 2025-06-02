@@ -26,7 +26,7 @@ class Event(models.Model):
     image = models.ImageField(upload_to="events/images/", null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    location = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

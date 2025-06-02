@@ -51,19 +51,20 @@ class Ticket(models.Model):
 
     def clean(self):
         """Validate ticket data"""
-        if self.event.start_date < timezone.now():
+        event = self.ticket_type.event
+        if event.start_date < timezone.now():
             raise ValidationError("Cannot create ticket for past events")
 
-        if self.event.max_participants:
+        if event.max_participants:
             pending_transactions_tickets = 0
             confirmed_tickets = (
-                self.event.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
+                event.ticket_types.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
             )
-            if self.event.transactions:
+            if event.transactions:
                 pending_transactions_tickets = (
-                    self.event.transactions.filter(status="pending").exclude(id=self.id).count()
+                    event.transactions.objects.filter(status="pending").exclude(id=self.id).count()
                 )
-            if confirmed_tickets + pending_transactions_tickets >= self.event.max_participants:
+            if confirmed_tickets + pending_transactions_tickets >= event.max_participants:
                 raise ValidationError("Event has reached maximum participants")
 
     def save(self, *args, **kwargs):
