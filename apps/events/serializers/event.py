@@ -28,7 +28,7 @@ class EventSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["created_at", "updated_at"]
+        read_only_fields = ["public_id", "created_at", "updated_at"]
 
 
 class EventCreateSerializer(serializers.ModelSerializer):
@@ -44,6 +44,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
+            "public_id",
             "title",
             "description",
             "organization",
@@ -54,3 +55,4 @@ class EventCreateSerializer(serializers.ModelSerializer):
             "location",
             "ticket_types",
         ]
+        read_only_fields = ["public_id"]

@@ -27,8 +27,8 @@ class OrganizationDetailView(RetrieveUpdateAPIView):
     permission_classes = [IsOwnerOrReadOnly]
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
-    lookup_field = "id"
-    lookup_url_kwarg = "org_id"
+    lookup_field = "username"
+    lookup_url_kwarg = "org_username"
 
     def get_serializer_class(self):
         if self.request.method == "PATCH" or self.request.method == "PUT":

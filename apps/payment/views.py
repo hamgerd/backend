@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from django.conf import LazySettings, settings
-from utils import CurrencyEnum
+from .utils import CurrencyEnum
 from decouple import config
 
 

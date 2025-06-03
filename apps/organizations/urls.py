@@ -9,5 +9,5 @@ app_name = "organizations"
 
 urlpatterns = [
     path("", OrganizationCreateView.as_view(), name="organization-list"),
-    path("<int:org_id>/", OrganizationDetailView.as_view(), name="organization-detail"),
+    path("<str:org_username>/", OrganizationDetailView.as_view(), name="organization-detail"),
 ]

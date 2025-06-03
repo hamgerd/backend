@@ -1,9 +1,9 @@
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from . import views
 
 app_name = "payment"
 
-router = DefaultRouter()
-
-router.register("transaction/pay/<str:bill_id>", views.pay_bill, basename="payment")
-router.register("transaction/verify/<str:authority>", views.verify_payment, basename="payment")
+urlpatterns = [
+    path("pay/<str:bill_id>/", views.pay_bill, name="pay"),
+    path("verify/<str:authority>/", views.verify_payment, name="verify"),
+]

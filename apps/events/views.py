@@ -7,7 +7,8 @@ from rest_framework.response import Response
 
 from .models import Event, Speaker, Ticket
 from .permissions import IsOrganizationOwnerThroughPermission, OrganizationOwnerPermission
-from .serializers import EventCreateSerializer, EventSerializer, SpeakerSerializer, TicketSerializer
+from .serializers import EventCreateSerializer, EventSerializer, SpeakerSerializer, TicketSerializer, \
+    TicketCreateSerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -40,11 +41,10 @@ class TicketViewSet(viewsets.ModelViewSet):
         return Ticket.objects.filter(event=event_id)
 
     def get_serializer_class(self):
-        match self.action:
-            case "create":
-                return TicketSerializer
-            case _:
-                return TicketSerializer
+        if self.action == "create":
+            return TicketCreateSerializer
+        else:
+            return TicketSerializer
 
 
 class SpeakerViewSet(
