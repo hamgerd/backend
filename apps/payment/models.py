@@ -8,17 +8,7 @@ from django.utils import timezone
 
 from apps.core.models import BaseModel
 from apps.events.models import Ticket, TicketStatus
-from .utils import CurrencyEnum
-
-
-class BillStatus(Enum):
-    PENDING = "pending"
-    CONFIRMED = "confirmed"
-    CANCELLED = "cancelled"
-
-    @classmethod
-    def choices(cls):
-        return [(tag.name, tag.value) for tag in cls]
+from .utils import CurrencyEnum, BillStatus
 
 
 class TicketTransaction(BaseModel):
@@ -33,7 +23,7 @@ class TicketTransaction(BaseModel):
     ticket = models.OneToOneField(Ticket, on_delete=models.CASCADE, related_name="transactions", null=True)
 
     def clean(self):
-        if self.amount > self.bill.amount:
+        if self.amount > self.ticket.ticket_type.price:
             raise ValidationError("Payment amount cannot exceed bill amount.")
 
     @property

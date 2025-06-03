@@ -8,7 +8,7 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from .event import Event
-from ...payment.utils import CurrencyEnum
+from ...payment.utils import CurrencyEnum, BillStatus
 from apps.core.models import BaseModel
 
 
@@ -53,33 +53,42 @@ class Ticket(BaseModel):
     def clean(self):
         """Validate ticket data"""
         event = self.ticket_type.event
+
         if event.start_date < timezone.now():
-            raise ValidationError("Cannot create ticket for past events")
+            raise ValidationError("Cannot create ticket for past events.")
 
         if event.max_participants:
-            pending_transactions_tickets = 0
-            confirmed_tickets = (
-                event.ticket_types.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
-            )
-            if event.transactions:
-                pending_transactions_tickets = (
-                    event.transactions.objects.filter(status="pending").exclude(id=self.id).count()
-                )
-            if confirmed_tickets + pending_transactions_tickets >= event.max_participants:
-                raise ValidationError("Event has reached maximum participants")
+            # Confirmed tickets excluding this one
+            confirmed_count = self.ticket_type.tickets.filter(
+                status=TicketStatus.CONFIRMED.value
+            ).exclude(id=self.id).count()
+
+            # Pending transactions excluding this one (if it exists)
+            TicketTransaction = apps.get_model("payment", "TicketTransaction")
+            pending_count = TicketTransaction.objects.filter(
+                ticket__ticket_type__event=event,
+                status=BillStatus.PENDING.name
+            ).exclude(ticket_id=self.id).count()
+
+            if confirmed_count + pending_count >= event.max_participants:
+                raise ValidationError("Event has reached maximum participants.")
 
     def save(self, *args, **kwargs):
-        self.clean()
-        if self.transaction == None :
-            TicketTransaction = apps.get_model("events", "TicketTransaction")
-            TicketTransaction.objects.create(
-                ticket=self,
-                defaults={
-                    "amount": self.ticket_type.price,
-                    "currency": self.ticket_type.currency,
-                }
-            )
+        self.clean()  # optional: move to full_clean() if doing validation systematically
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+
+        # Only create transaction if ticket is newly created and has no transaction yet
+        if is_new:
+            TicketTransaction = apps.get_model("payment", "TicketTransaction")
+            try:
+                self.transactions  # attempt to access related object
+            except TicketTransaction.DoesNotExist:
+                TicketTransaction.objects.create(
+                    ticket=self,
+                    amount=self.ticket_type.price,
+                    currency=self.ticket_type.currency
+                )
 
     def confirm(self):
         """Confirm the ticket"""
