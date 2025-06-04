@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.cache import cache
 from django.core.validators import MinLengthValidator
 from django.db import models
 
@@ -14,8 +15,9 @@ class Organization(BaseModel):
         unique=True,
         validators=[UnicodeUsernameValidator(), MinLengthValidator(3, "Username must be at least 3 characters long")],
     )
-    image = models.ImageField(upload_to="organizations/images/", blank=True)
-    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to="organizations/images/", blank=True)
+    description = models.CharField(max_length=256, blank=True)
+    long_description = models.TextField(blank=True)
     email = models.EmailField(blank=True, null=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="organizations")
     address = models.TextField(blank=True, null=True)
@@ -23,10 +25,20 @@ class Organization(BaseModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def event_count(self):
+        key = f"{self.username}:event-count"
+        data = cache.get(key)
+        if data:
+            return data
+        else:
+            event_count_data = self.events.count()
+            cache.set(key, event_count_data, timeout=60 * 60 * 12)
+
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        if not self.image:
+        if not self.logo:
             add_default_image(self)
         super().save(*args, **kwargs)
