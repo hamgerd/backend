@@ -39,7 +39,8 @@ class TicketTransaction(BaseModel):
         self.ticket.status = TicketStatus.CANCELLED
         self.save()
 
-    def confirm(self):
+    def confirm(self, ref_id):
+        self.transaction_id = ref_id
         self.status = BillStatus.CONFIRMED
         self.ticket.status = TicketStatus.CONFIRMED
         self.save()

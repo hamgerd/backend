@@ -74,7 +74,7 @@ class Ticket(BaseModel):
                 raise ValidationError("Event has reached maximum participants.")
 
     def save(self, *args, **kwargs):
-        self.clean()  # optional: move to full_clean() if doing validation systematically
+        self.clean()
         is_new = self.pk is None
         super().save(*args, **kwargs)
 
@@ -82,7 +82,7 @@ class Ticket(BaseModel):
         if is_new:
             TicketTransaction = apps.get_model("payment", "TicketTransaction")
             try:
-                self.transactions  # attempt to access related object
+                self.transactions
             except TicketTransaction.DoesNotExist:
                 TicketTransaction.objects.create(
                     ticket=self,

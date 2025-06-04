@@ -19,16 +19,16 @@ class TransactionRequest(BaseModel):
     merchant_id: str = Field(..., min_length=36, max_length=36)
     amount: int = Field(..., gt=0)
     currency: Optional[CurrencyEnum] = None
-    description: str
+    note: str
     callback_url: HttpUrl
     metadata: Optional[Metadata] = None
 
 
-def send_payment_request(tx: TransactionRequest, settings: LazySettings) -> Dict[str, Any]:
+def send_payment_request(tx: TransactionRequest) -> Dict[str, Any]:
     payload = {
-        "MerchantID": settings.MERCHANT,
+        "MerchantID": tx.merchant_id,
         "Amount": tx.amount,
-        "Description": tx.description,
+        "Description": tx.note,
         "CallbackURL": str(tx.callback_url),
     }
 
@@ -62,9 +62,9 @@ def send_payment_request(tx: TransactionRequest, settings: LazySettings) -> Dict
         return {"status": False, "code": "connection_error"}
 
 
-def verify_payment_request(authority: str, amount: int, settings: LazySettings) -> Dict[str, Any]:
+def verify_payment_request(authority: str, amount: int, merchant_id) -> Dict[str, Any]:
     payload = {
-        "MerchantID": settings.MERCHANT,
+        "MerchantID": merchant_id,
         "Amount": amount,
         "Authority": authority,
     }

@@ -6,7 +6,7 @@ class TicketTransactionSerializer(serializers.ModelSerializer):
         model = TicketTransaction
         fields = [
             'public_id',
-            'amount'
+            'amount',
             'currency',
             'authority',
             'status',
