@@ -13,8 +13,6 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.core.tasks.email import send_email
-from apps.events.models import Ticket
-from apps.events.serializers import TicketSerializer
 from apps.users.models import User
 from apps.users.serializers.me import UserMESerializer
 from apps.users.serializers.user import (

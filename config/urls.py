@@ -1,9 +1,9 @@
+from decouple import config
 from django.contrib import admin
 from django.urls import include, path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from decouple import config
 
 API_VERSION = config("API_VERSION")
 
@@ -31,12 +31,7 @@ api_patterns = [
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
-beta_api_patterns = [
-
-]
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(f"api/{API_VERSION}/", include(api_patterns)),
-    path(f"api/beta/", include(beta_api_patterns)),
 ]

@@ -3,8 +3,9 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from apps.core.utils.identicon import add_default_image
 from apps.core.models import BaseModel
+from apps.core.utils.identicon import add_default_image
+
 
 class Organization(BaseModel):
     name = models.CharField(max_length=255)

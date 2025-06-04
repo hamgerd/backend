@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from ..models import Ticket, TicketType
 from ...payment.serializer import TicketTransactionSerializerPublic
+from ..models import Ticket, TicketType
 
 
 class TicketTypeSerializer(serializers.ModelSerializer):
@@ -17,8 +17,18 @@ class TicketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ["public_id", "ticket_type", "status", "ticket_number", "notes", "event", "created_at", "updated_at", "transactions"]
-        read_only_fields = ["public_id" ,"created_at", "updated_at", "transactions"]
+        fields = [
+            "public_id",
+            "ticket_type",
+            "status",
+            "ticket_number",
+            "notes",
+            "event",
+            "created_at",
+            "updated_at",
+            "transactions",
+        ]
+        read_only_fields = ["public_id", "created_at", "updated_at", "transactions"]
 
     def get_event(self, obj):
         return {

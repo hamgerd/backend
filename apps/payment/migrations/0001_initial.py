@@ -7,27 +7,46 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('events', '0007_speaker'),
+        ("events", "0007_speaker"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TicketTransaction',
+            name="TicketTransaction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', models.TextField()),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=12, validators=[django.core.validators.MinValueValidator(0)])),
-                ('currency', models.CharField(choices=[('IRR', 'IRR'), ('IRT', 'IRT')], max_length=3)),
-                ('authority', models.CharField(max_length=128, null=True)),
-                ('status', models.CharField(choices=[('PENDING', 'pending'), ('CONFIRMED', 'confirmed'), ('CANCELLED', 'cancelled')], default='PENDING', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('paid_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('transaction_id', models.CharField(max_length=128, null=True)),
-                ('ticket', models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='transactions', to='events.ticket')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("description", models.TextField()),
+                (
+                    "amount",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=12, validators=[django.core.validators.MinValueValidator(0)]
+                    ),
+                ),
+                ("currency", models.CharField(choices=[("IRR", "IRR"), ("IRT", "IRT")], max_length=3)),
+                ("authority", models.CharField(max_length=128, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("PENDING", "pending"), ("CONFIRMED", "confirmed"), ("CANCELLED", "cancelled")],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("paid_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("transaction_id", models.CharField(max_length=128, null=True)),
+                (
+                    "ticket",
+                    models.OneToOneField(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="transactions",
+                        to="events.ticket",
+                    ),
+                ),
             ],
         ),
     ]

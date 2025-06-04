@@ -1,8 +1,9 @@
 # news/feeds.py
 
 from django.contrib.syndication.views import Feed
-from django.urls import reverse
+
 from .models import News
+
 
 class LatestNewsFeed(Feed):
     title = "Latest News"
@@ -10,7 +11,7 @@ class LatestNewsFeed(Feed):
     description = "Updates on the latest news articles."
 
     def items(self):
-        return News.objects.order_by('-created_at')[:10]
+        return News.objects.order_by("-created_at")[:10]
 
     def item_title(self, item):
         return item.title

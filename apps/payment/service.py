@@ -1,30 +1,32 @@
-from django.conf import LazySettings, settings
-from enum import Enum
-from pydantic import BaseModel, Field, HttpUrl, EmailStr
-from typing import Optional, Dict, Any
+from typing import Any
+
 import httpx
+from django.conf import settings
+from pydantic import BaseModel, EmailStr, Field, HttpUrl
+
 from .utils import CurrencyEnum
 
-ZP_API_REQUEST = settings.PAYMENT_PORTAL_BASE_URL + 'pg/v4/payment/request.json'
-ZP_API_STARTPAY = settings.PAYMENT_PORTAL_BASE_URL + 'pg/StartPay/'
+ZP_API_REQUEST = settings.PAYMENT_PORTAL_BASE_URL + "pg/v4/payment/request.json"
+ZP_API_STARTPAY = settings.PAYMENT_PORTAL_BASE_URL + "pg/StartPay/"
 ZP_API_VERIFY = settings.PAYMENT_PORTAL_BASE_URL + "pg/v4/payment/verify.json"
 
+
 class Metadata(BaseModel):
-    mobile: Optional[str] = None
-    email: Optional[EmailStr] = None
-    order_id: Optional[str] = None
+    mobile: str | None = None
+    email: EmailStr | None = None
+    order_id: str | None = None
 
 
 class TransactionRequest(BaseModel):
     merchant_id: str = Field(..., min_length=36, max_length=36)
     amount: int = Field(..., gt=0)
-    currency: Optional[CurrencyEnum] = None
+    currency: CurrencyEnum | None = None
     note: str
     callback_url: HttpUrl
-    metadata: Optional[Metadata] = None
+    metadata: Metadata | None = None
 
 
-def send_payment_request(tx: TransactionRequest) -> Dict[str, Any]:
+def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
     payload = {
         "MerchantID": tx.merchant_id,
         "Amount": tx.amount,
@@ -36,7 +38,7 @@ def send_payment_request(tx: TransactionRequest) -> Dict[str, Any]:
         if tx.metadata.mobile:
             payload["Phone"] = tx.metadata.mobile
         if tx.metadata.email:
-            payload["Email"] = tx.metadata.email
+            payload["Email"] = str(tx.metadata.email)
         if tx.metadata.order_id:
             payload["OrderId"] = tx.metadata.order_id
 
@@ -62,7 +64,7 @@ def send_payment_request(tx: TransactionRequest) -> Dict[str, Any]:
         return {"status": False, "code": "connection_error"}
 
 
-def verify_payment_request(authority: str, amount: int, merchant_id) -> Dict[str, Any]:
+def verify_payment_request(authority: str, amount: int, merchant_id) -> dict[str, Any]:
     payload = {
         "MerchantID": merchant_id,
         "Amount": amount,

@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django.contrib.syndication',
+    "django.contrib.syndication",
     *THIRD_PARY_APPS,
     *LOCAL_APPS,
 ]

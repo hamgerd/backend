@@ -1,15 +1,16 @@
 from enum import Enum
 
-from django.conf import settings
 from django.apps import apps
+from django.conf import settings
 from django.core import validators
 from django.db import models
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from .event import Event
-from ...payment.utils import CurrencyEnum, BillStatus
 from apps.core.models import BaseModel
+
+from ...payment.utils import BillStatus, CurrencyEnum
+from .event import Event
 
 
 class TicketStatus(Enum):
@@ -59,16 +60,17 @@ class Ticket(BaseModel):
 
         if event.max_participants:
             # Confirmed tickets excluding this one
-            confirmed_count = self.ticket_type.tickets.filter(
-                status=TicketStatus.CONFIRMED.value
-            ).exclude(id=self.id).count()
+            confirmed_count = (
+                self.ticket_type.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
+            )
 
             # Pending transactions excluding this one (if it exists)
             TicketTransaction = apps.get_model("payment", "TicketTransaction")
-            pending_count = TicketTransaction.objects.filter(
-                ticket__ticket_type__event=event,
-                status=BillStatus.PENDING.name
-            ).exclude(ticket_id=self.id).count()
+            pending_count = (
+                TicketTransaction.objects.filter(ticket__ticket_type__event=event, status=BillStatus.PENDING.name)
+                .exclude(ticket_id=self.id)
+                .count()
+            )
 
             if confirmed_count + pending_count >= event.max_participants:
                 raise ValidationError("Event has reached maximum participants.")
@@ -85,9 +87,7 @@ class Ticket(BaseModel):
                 self.transactions
             except TicketTransaction.DoesNotExist:
                 TicketTransaction.objects.create(
-                    ticket=self,
-                    amount=self.ticket_type.price,
-                    currency=self.ticket_type.currency
+                    ticket=self, amount=self.ticket_type.price, currency=self.ticket_type.currency
                 )
 
     def confirm(self):

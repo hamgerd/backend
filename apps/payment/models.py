@@ -1,5 +1,4 @@
 from datetime import timedelta
-from enum import Enum
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -8,7 +7,8 @@ from django.utils import timezone
 
 from apps.core.models import BaseModel
 from apps.events.models import Ticket, TicketStatus
-from .utils import CurrencyEnum, BillStatus
+
+from .utils import BillStatus, CurrencyEnum
 
 
 class TicketTransaction(BaseModel):

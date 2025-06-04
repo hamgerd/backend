@@ -1,14 +1,19 @@
 from rest_framework import mixins, permissions, status, viewsets
-from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Event, Speaker, Ticket
 from .permissions import IsOrganizationOwnerThroughPermission, OrganizationOwnerPermission
-from .serializers import EventCreateSerializer, EventSerializer, SpeakerSerializer, TicketSerializer, \
-    TicketCreateSerializer
+from .serializers import (
+    EventCreateSerializer,
+    EventSerializer,
+    SpeakerSerializer,
+    TicketCreateSerializer,
+    TicketSerializer,
+)
 
 
 class EventViewSet(viewsets.ModelViewSet):

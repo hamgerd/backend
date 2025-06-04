@@ -5,15 +5,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('events', '0005_tickettype_price'),
+        ("events", "0005_tickettype_price"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tickettype',
-            name='price',
+            model_name="tickettype",
+            name="price",
             field=models.IntegerField(validators=[django.core.validators.MinValueValidator(0)]),
         ),
     ]

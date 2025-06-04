@@ -9,21 +9,18 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK_BASE = {
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day'
-    }
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
 }
 
 REST_FRAMEWORK.update(REST_FRAMEWORK_BASE)
 
 INSTALLED_APPS += [
-    'django_extensions',
+    "django_extensions",
 ]
 
 PAYMENT_PORTAL_BASE_URL = "https://sandbox.zarinpal.com/"
-CALLBACK_URL = 'https://test.hamgerd.ir/verify/'
+CALLBACK_URL = "https://test.hamgerd.ir/verify/"

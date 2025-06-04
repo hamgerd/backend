@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from apps.users.serializers.user import UserSerializer
-
 from .models import Organization
 
 

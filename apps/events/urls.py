@@ -1,5 +1,5 @@
-from rest_framework_nested import routers
 from django.urls import path
+from rest_framework_nested import routers
 
 from . import views
 
@@ -16,6 +16,5 @@ events_router.register("speakers", views.SpeakerViewSet, basename="speaker")
 urlpatterns = [
     *router.urls,
     *events_router.urls,
-
     path("tickets/me/", views.UserTicketsView.as_view(), name="user-tickets"),
 ]
