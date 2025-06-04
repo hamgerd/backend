@@ -37,7 +37,13 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class TicketViewSet(viewsets.ModelViewSet):
+class TicketViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = "public_id"
 
@@ -56,7 +62,11 @@ class TicketViewSet(viewsets.ModelViewSet):
 
 
 class SpeakerViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
 ):
     serializer_class = SpeakerSerializer
     lookup_field = "public_id"
@@ -69,7 +79,7 @@ class SpeakerViewSet(
         return Speaker.objects.filter(event__public_id=event_id)
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["retrieve", "list"]:
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsOrganizationOwnerThroughPermission()]
 
