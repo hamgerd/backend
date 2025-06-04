@@ -42,7 +42,7 @@ codegen:
 	java -jar ~/.local/bin/swagger-codegen-cli.jar generate --additional-properties modelPropertyNaming=original -i swagger.json -l typescript-axios -o .api
 
 swagger:
-	curl http://localhost:8000/swagger.json/ > swagger.json                                                                                                                              ─╯
+	curl http://localhost:8000/api/v1/swagger.json/ > swagger.json                                                                                                                              ─╯
 
 populate:
 	uv run python manage.py runscript populate
