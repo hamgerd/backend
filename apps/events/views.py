@@ -19,6 +19,8 @@ from .serializers import (
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.get_all_events()
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, OrganizationOwnerPermission]
+    lookup_field = "public_id"
+    lookup_url_kwarg = "public_id"
 
     def get_serializer_class(self):
         match self.action:
@@ -37,6 +39,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
 class TicketViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "public_id"
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
@@ -56,13 +59,14 @@ class SpeakerViewSet(
     mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
     serializer_class = SpeakerSerializer
+    lookup_field = "public_id"
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Speaker.objects.none()
 
-        event_id = self.kwargs["event_pk"]
-        return Speaker.objects.filter(event__id=event_id)
+        event_id = self.kwargs["event_public_id"]
+        return Speaker.objects.filter(event__public_id=event_id)
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
