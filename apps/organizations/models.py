@@ -28,12 +28,12 @@ class Organization(BaseModel):
     @property
     def event_count(self):
         key = f"{self.username}:event-count"
-        data = cache.get(key)
-        if data:
-            return data
-        else:
+        event_count_data = cache.get(key)
+        if not event_count_data:
             event_count_data = self.events.count()
             cache.set(key, event_count_data, timeout=60 * 60 * 12)
+
+        return event_count_data
 
     def __str__(self):
         return self.name
