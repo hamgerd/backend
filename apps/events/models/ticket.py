@@ -1,5 +1,3 @@
-from enum import Enum
-
 from django.apps import apps
 from django.conf import settings
 from django.core import validators
@@ -9,19 +7,10 @@ from rest_framework.exceptions import ValidationError
 
 from apps.core.models import BaseModel
 
-from ...payment.utils import BillStatus, CurrencyEnum
+from ...payment.models import TicketTransaction
+from ...payment.utils import BillStatus
+from ..utils import TicketStatus
 from .event import Event
-
-
-class TicketStatus(Enum):
-    PENDING = "pending"
-    CONFIRMED = "confirmed"
-    CANCELLED = "cancelled"
-    EXPIRED = "expired"
-
-    @classmethod
-    def choices(cls):
-        return [(status.value, status.name.title()) for status in cls]
 
 
 class TicketType(BaseModel):
@@ -29,27 +18,48 @@ class TicketType(BaseModel):
     description = models.TextField(blank=True)
     max_participants = models.PositiveIntegerField(validators=[validators.MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
-    price = models.IntegerField(validators=[validators.MinValueValidator(0)])
-    currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
+    price = models.PositiveIntegerField()
+    # currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
 
 
 class Ticket(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
     ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE, related_name="tickets")
     status = models.CharField(max_length=20, choices=TicketStatus.choices(), default=TicketStatus.PENDING.value)
-    ticket_number = models.CharField(max_length=50, unique=True)
+    ticket_number = models.PositiveSmallIntegerField(editable=False)
+    final_amount = models.PositiveIntegerField()
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    transaction = models.ForeignKey(
+        TicketTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name="tickets"
+    )
 
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Ticket"
         verbose_name_plural = "Tickets"
-        unique_together = ["user", "ticket_type"]
 
     def __str__(self):
         return f"Ticket {self.ticket_number} - {self.event.title}"
+
+    @property
+    def remaining_tickets(self):
+        event = self.ticket_type.event
+
+        confirmed_count = (
+            self.ticket_type.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
+        )
+
+        # Pending transactions excluding this one (if it exists)
+        TicketTransaction = apps.get_model("payment", "TicketTransaction")
+        pending_count = (
+            TicketTransaction.objects.filter(ticket__ticket_type__event=event, status=BillStatus.PENDING.name)
+            .exclude(ticket_id=self.id)
+            .count()
+        )
+
+        return confirmed_count + pending_count
 
     def clean(self):
         """Validate ticket data"""
@@ -60,35 +70,12 @@ class Ticket(BaseModel):
 
         if event.max_participants:
             # Confirmed tickets excluding this one
-            confirmed_count = (
-                self.ticket_type.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
-            )
-
-            # Pending transactions excluding this one (if it exists)
-            TicketTransaction = apps.get_model("payment", "TicketTransaction")
-            pending_count = (
-                TicketTransaction.objects.filter(ticket__ticket_type__event=event, status=BillStatus.PENDING.name)
-                .exclude(ticket_id=self.id)
-                .count()
-            )
-
-            if confirmed_count + pending_count >= event.max_participants:
+            if self.remaining_tickets >= event.max_participants:
                 raise ValidationError("Event has reached maximum participants.")
 
     def save(self, *args, **kwargs):
         self.clean()
-        is_new = self.pk is None
         super().save(*args, **kwargs)
-
-        # Only create transaction if ticket is newly created and has no transaction yet
-        if is_new:
-            TicketTransaction = apps.get_model("payment", "TicketTransaction")
-            try:
-                self.transactions
-            except TicketTransaction.DoesNotExist:
-                TicketTransaction.objects.create(
-                    ticket=self, amount=self.ticket_type.price, currency=self.ticket_type.currency
-                )
 
     def confirm(self):
         """Confirm the ticket"""
