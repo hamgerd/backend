@@ -12,6 +12,7 @@ from .service import TransactionRequest, send_payment_request, verify_payment_re
 from .utils import CurrencyEnum
 
 MERCHANT_ID = config("MERCHANT_ID")
+DEFAULT_CURRENCY = CurrencyEnum.IRT
 
 
 class PayTransactionView(GenericAPIView):
@@ -24,7 +25,7 @@ class PayTransactionView(GenericAPIView):
         ta_req = TransactionRequest(
             merchant_id=MERCHANT_ID,
             amount=int(bill.amount),
-            currency=CurrencyEnum(bill.currency),
+            currency=DEFAULT_CURRENCY,
             callback_url=settings.CALLBACK_URL,
         )
         response = send_payment_request(ta_req)
