@@ -1,4 +1,3 @@
-from django.apps import apps
 from django.conf import settings
 from django.core import validators
 from django.db import models
@@ -6,9 +5,8 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.core.models import BaseModel
+from apps.payment.models import TicketTransaction
 
-from ...payment.models import TicketTransaction
-from ...payment.utils import BillStatus
 from ..utils import TicketStatus
 from .event import Event
 
@@ -20,6 +18,13 @@ class TicketType(BaseModel):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
     price = models.PositiveIntegerField()
     # currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
+
+    @property
+    def remaining_tickets(self):
+        unavailable_tickets_count = self.tickets.filter(
+            status__in=[TicketStatus.CONFIRMED.value, TicketStatus.PENDING.value]
+        ).count()
+        return self.max_participants - unavailable_tickets_count
 
 
 class Ticket(BaseModel):
@@ -43,24 +48,6 @@ class Ticket(BaseModel):
     def __str__(self):
         return f"Ticket {self.ticket_number} - {self.event.title}"
 
-    @property
-    def remaining_tickets(self):
-        event = self.ticket_type.event
-
-        confirmed_count = (
-            self.ticket_type.tickets.filter(status=TicketStatus.CONFIRMED.value).exclude(id=self.id).count()
-        )
-
-        # Pending transactions excluding this one (if it exists)
-        TicketTransaction = apps.get_model("payment", "TicketTransaction")
-        pending_count = (
-            TicketTransaction.objects.filter(ticket__ticket_type__event=event, status=BillStatus.PENDING.name)
-            .exclude(ticket_id=self.id)
-            .count()
-        )
-
-        return confirmed_count + pending_count
-
     def clean(self):
         """Validate ticket data"""
         event = self.ticket_type.event
@@ -69,12 +56,12 @@ class Ticket(BaseModel):
             raise ValidationError("Cannot create ticket for past events.")
 
         if event.max_participants:
-            # Confirmed tickets excluding this one
-            if self.remaining_tickets >= event.max_participants:
+            if self.ticket_type.remaining_tickets < 1:
                 raise ValidationError("Event has reached maximum participants.")
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.ticket_number = self.ticket_type.tickets.filter(status=TicketStatus.CONFIRMED).count() + 1
+        self.full_clean()
         super().save(*args, **kwargs)
 
     def confirm(self):
@@ -92,17 +79,3 @@ class Ticket(BaseModel):
             self.save()
             return True
         return False
-
-    @classmethod
-    def get_user_tickets(cls, user):
-        """Get all tickets for a user"""
-        return cls.objects.filter(user=user)
-
-    @classmethod
-    def get_event_tickets(cls, event):
-        """Get all tickets for an event"""
-        return cls.objects.filter(event=event)
-
-    @property
-    def event(self):
-        return self.ticket_type.event

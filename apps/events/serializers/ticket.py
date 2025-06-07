@@ -39,7 +39,16 @@ class TicketSerializer(serializers.ModelSerializer):
         }
 
 
-class TicketCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ticket
-        fields = ["ticket_type", "notes"]
+class TicketCreateSerializer(serializers.Serializer):
+    ticket_type_public_id = serializers.UUIDField()
+    count = serializers.IntegerField(min_value=1)
+
+
+class TicketsResponseDataSerialize(serializers.Serializer):
+    ticket_type_public_id = serializers.UUIDField()
+    ticket_public_ids = serializers.ListSerializer(child=serializers.UUIDField(), allow_empty=False)
+
+
+class TicketCreateResponseSerializer(serializers.Serializer):
+    ticket_data = TicketsResponseDataSerialize(many=True, allow_empty=False)
+    transaction_public_id = serializers.UUIDField()

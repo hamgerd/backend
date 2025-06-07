@@ -1,7 +1,8 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -14,6 +15,8 @@ from .serializers import (
     TicketCreateSerializer,
     TicketSerializer,
 )
+from .serializers.ticket import TicketCreateResponseSerializer
+from .services.tickets import TicketCreationService
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -55,10 +58,24 @@ class TicketViewSet(
         return Ticket.objects.filter(event=event_id)
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action == "create_by_type":
             return TicketCreateSerializer
         else:
             return TicketSerializer
+
+    @swagger_auto_schema(
+        request_body=TicketCreateSerializer(many=True),
+        responses={201: TicketCreateResponseSerializer()},
+    )
+    @action(methods=["post"], detail=False)
+    def create_by_type(self, request, event_public_id=None):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        event = get_object_or_404(Event, public_id=event_public_id)
+        response_serializer = TicketCreationService.handle_ticket_creation(
+            event, request.user, serializer.validated_data
+        )
+        return Response(response_serializer.data, status.HTTP_201_CREATED)
 
 
 class SpeakerViewSet(
