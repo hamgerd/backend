@@ -41,7 +41,6 @@ class EventViewSet(viewsets.ModelViewSet):
 
 
 class TicketViewSet(
-    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.ListModelMixin,
