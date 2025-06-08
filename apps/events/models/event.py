@@ -56,5 +56,5 @@ class Event(BaseModel):
         return cls.objects.filter(is_active=True, start_date__gte=timezone.now())[:10]
 
     @property
-    def max_participants(self):
+    def max_participants(self) -> int:
         return sum([item.max_participants for item in self.ticket_types.all()])

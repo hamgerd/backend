@@ -26,7 +26,7 @@ class Organization(BaseModel):
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
-    def event_count(self):
+    def event_count(self) -> int:
         key = f"{self.username}:event-count"
         event_count_data = cache.get(key)
         if not event_count_data:

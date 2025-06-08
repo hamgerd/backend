@@ -2,8 +2,7 @@ from datetime import timedelta
 
 from django.db import transaction
 from django.utils import timezone
-from drf_yasg.openapi import Schema
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -29,7 +28,7 @@ class UserMeView(GenericAPIView):
     serializer_class = UserMESerializer
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(responses={200: UserMESerializer})
+    @extend_schema(responses={200: UserMESerializer})
     def get(self, request):
         serializer = UserMESerializer(request.user)
         return Response(serializer.data)
@@ -43,8 +42,8 @@ class UserRegisterView(GenericAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
-        request_body=UserRegistrationSerializer(),
+    @extend_schema(
+        request=UserRegistrationSerializer(),
         responses={
             HTTP_201_CREATED: UserRegistrationSerializer(),
         },
@@ -96,21 +95,12 @@ class PasswordResetRequestView(GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
-            HTTP_201_CREATED: Schema(
-                type="object", properties={"message": Schema(type="string", description="Success message")}
-            ),
-            HTTP_400_BAD_REQUEST: Schema(
-                type="object",
-                properties={
-                    "error": Schema(type="string", description="Error message"),
-                    "errors": Schema(
-                        type="object",
-                        additional_properties=Schema(type="string"),
-                    ),
-                },
-            ),
+            HTTP_201_CREATED: {
+                "type": "object",
+                "properties": {"message": {"type": "string", "description": "Success message"}},
+            },
         }
     )
     def post(self, request: Request):
@@ -118,9 +108,12 @@ class PasswordResetRequestView(GenericAPIView):
 
         if serializer.is_valid():
             email = serializer.validated_data["email"]
-            user = User.get_by_email(email)
-            verification_token = self.create_password_reset_token(user)
-            self.send_password_reset_email(user, verification_token)
+            try:
+                user = User.objects.get(email__iexact=email)
+                verification_token = self.create_password_reset_token(user)
+                self.send_password_reset_email(user, verification_token)
+            except User.DoesNotExist:
+                pass
             return Response({"message": "Password reset email sent"}, status=HTTP_201_CREATED)
 
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
@@ -158,18 +151,24 @@ class PasswordResetView(GenericAPIView):
     serializer_class = PasswordResetSerializer
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
-            HTTP_201_CREATED: Schema(
-                type="object", properties={"message": Schema(type="string", description="Success message")}
-            ),
-            HTTP_400_BAD_REQUEST: Schema(
-                type="object",
-                properties={
-                    "error": Schema(type="string", description="Error message"),
-                    "errors": Schema(type="object", additional_properties=Schema(type="string")),
+            HTTP_201_CREATED: {
+                "type": "object",
+                "properties": {"message": {"type": "string", "description": "Success message"}},
+            },
+            HTTP_400_BAD_REQUEST: {
+                "type": "object",
+                "properties": {
+                    "errors": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                    },
                 },
-            ),
+            },
         }
     )
     @transaction.atomic
@@ -182,10 +181,10 @@ class PasswordResetView(GenericAPIView):
             try:
                 token_instance = VerificationToken.objects.get(token=token)
             except VerificationToken.DoesNotExist as e:
-                raise ValidationError({"error": "Token invalid or expired"}) from e
+                raise ValidationError({"errors": {"token": "Token invalid or expired"}}) from e
 
             if token_instance.is_expired:
-                raise ValidationError({"error": "Token expired"})
+                raise ValidationError({"errors": {"token": "Token expired"}})
 
             token_instance.user.set_password(password)
             token_instance.user.save()

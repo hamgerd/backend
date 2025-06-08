@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from apps.core.models import BaseModel
 from apps.payment.models import TicketTransaction
 
-from ..utils import TicketStatus
+from ..choices import TicketStatusChoice
 from .event import Event
 
 
@@ -22,7 +22,7 @@ class TicketType(BaseModel):
     @property
     def remaining_tickets(self):
         unavailable_tickets_count = self.tickets.filter(
-            status__in=[TicketStatus.CONFIRMED.value, TicketStatus.PENDING.value]
+            status__in=[TicketStatusChoice.SUCCESS.value, TicketStatusChoice.PENDING.value]
         ).count()
         return self.max_participants - unavailable_tickets_count
 
@@ -30,7 +30,9 @@ class TicketType(BaseModel):
 class Ticket(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tickets")
     ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE, related_name="tickets")
-    status = models.CharField(max_length=20, choices=TicketStatus.choices(), default=TicketStatus.PENDING.value)
+    status = models.CharField(
+        max_length=20, choices=TicketStatusChoice.choices, default=TicketStatusChoice.PENDING.value
+    )
     ticket_number = models.PositiveSmallIntegerField(editable=False)
     final_amount = models.PositiveIntegerField()
     notes = models.TextField(blank=True)
@@ -60,22 +62,22 @@ class Ticket(BaseModel):
                 raise ValidationError("Event has reached maximum participants.")
 
     def save(self, *args, **kwargs):
-        self.ticket_number = self.ticket_type.tickets.filter(status=TicketStatus.CONFIRMED).count() + 1
+        self.ticket_number = self.ticket_type.tickets.filter(status=TicketStatusChoice.SUCCESS).count() + 1
         self.full_clean()
         super().save(*args, **kwargs)
 
     def confirm(self):
         """Confirm the ticket"""
-        if self.status == TicketStatus.PENDING.value:
-            self.status = TicketStatus.CONFIRMED.value
+        if self.status == TicketStatusChoice.PENDING.value:
+            self.status = TicketStatusChoice.SUCCESS.value
             self.save()
             return True
         return False
 
     def cancel(self):
         """Cancel the ticket"""
-        if self.status in [TicketStatus.PENDING.value, TicketStatus.CONFIRMED.value]:
-            self.status = TicketStatus.CANCELLED.value
+        if self.status in [TicketStatusChoice.PENDING.value, TicketStatusChoice.SUCCESS.value]:
+            self.status = TicketStatusChoice.CANCELLED.value
             self.save()
             return True
         return False

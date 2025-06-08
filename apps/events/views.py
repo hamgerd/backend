@@ -1,4 +1,4 @@
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -17,6 +17,13 @@ from .serializers import (
 )
 from .serializers.ticket import TicketCreateResponseSerializer
 from .services.tickets import TicketCreationService
+
+public_event_id_parameter = OpenApiParameter(
+    name="event_public_id",
+    type=str,
+    location="path",
+    description="The public ID of the event",
+)
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -40,6 +47,13 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@extend_schema_view(
+    retrieve=extend_schema(parameters=[public_event_id_parameter]),
+    update=extend_schema(parameters=[public_event_id_parameter]),
+    partial_update=extend_schema(parameters=[public_event_id_parameter]),
+    list=extend_schema(parameters=[public_event_id_parameter]),
+    create_by_type=extend_schema(parameters=[public_event_id_parameter]),
+)
 class TicketViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
@@ -62,8 +76,8 @@ class TicketViewSet(
         else:
             return TicketSerializer
 
-    @swagger_auto_schema(
-        request_body=TicketCreateSerializer(many=True),
+    @extend_schema(
+        request=TicketCreateSerializer(many=True),
         responses={201: TicketCreateResponseSerializer()},
     )
     @action(methods=["post"], detail=False)
@@ -77,6 +91,14 @@ class TicketViewSet(
         return Response(response_serializer.data, status.HTTP_201_CREATED)
 
 
+@extend_schema_view(
+    create=extend_schema(parameters=[public_event_id_parameter]),
+    retrieve=extend_schema(parameters=[public_event_id_parameter]),
+    update=extend_schema(parameters=[public_event_id_parameter]),
+    partial_update=extend_schema(parameters=[public_event_id_parameter]),
+    destroy=extend_schema(parameters=[public_event_id_parameter]),
+    list=extend_schema(parameters=[public_event_id_parameter]),
+)
 class SpeakerViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,

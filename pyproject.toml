@@ -9,7 +9,6 @@ dependencies = [
     "django>=5.1.7",
     "djangorestframework-simplejwt>=5.5.0",
     "djangorestframework>=3.15.2",
-    "drf-yasg>=1.21.10",
     "python-decouple>=3.8",
     "ruff>=0.11.2",
     "psycopg2-binary>=2.9.10",
@@ -24,4 +23,5 @@ dependencies = [
     "httpx>=0.28.1",
     "pydantic[email]>=2.11.5",
     "drf-nested-routers>=0.94.2",
+    "drf-spectacular>=0.28.0",
 ]

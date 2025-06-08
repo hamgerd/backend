@@ -19,7 +19,7 @@ LOCAL_APPS = [
     "apps.news.apps.NewsConfig",
 ]
 THIRD_PARY_APPS = [
-    "drf_yasg",
+    "drf_spectacular",
     "rest_framework",
     "corsheaders",
 ]
@@ -108,6 +108,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 25,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
@@ -168,5 +169,20 @@ STORAGES = {
     },
 }
 
+# External Urls
 EMAIL_VERIFICATION_URL = config("EMAIL_VERIFICATION_URL")
 PASSWORD_RESET_URL = config("PASSWORD_RESET_URL")
+
+
+# OpenAPI
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Neshast API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "SERVE_AUTHENTICATION": ["rest_framework.authentication.SessionAuthentication"],
+    "ENUM_NAME_OVERRIDES": {
+        "TicketStatusChoice": "apps.events.choices.TicketStatusChoice",
+        "BillStatusChoice": "apps.payment.choices.BillStatusChoice",
+    },
+}

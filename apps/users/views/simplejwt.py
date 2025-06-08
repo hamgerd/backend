@@ -1,4 +1,4 @@
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
 from rest_framework_simplejwt.views import (
     TokenBlacklistView,
@@ -20,7 +20,7 @@ class TokenObtainPairResponseSerializer(serializers.Serializer):
 
 
 class DecoratedTokenObtainPairView(TokenObtainPairView):
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             status.HTTP_200_OK: TokenObtainPairResponseSerializer,
         }
@@ -40,7 +40,7 @@ class TokenRefreshResponseSerializer(serializers.Serializer):
 
 
 class DecoratedTokenRefreshView(TokenRefreshView):
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             status.HTTP_200_OK: TokenRefreshResponseSerializer,
         }
@@ -58,7 +58,7 @@ class TokenVerifyResponseSerializer(serializers.Serializer):
 
 
 class DecoratedTokenVerifyView(TokenVerifyView):
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             status.HTTP_200_OK: TokenVerifyResponseSerializer,
         }
@@ -76,7 +76,7 @@ class TokenBlacklistResponseSerializer(serializers.Serializer):
 
 
 class DecoratedTokenBlacklistView(TokenBlacklistView):
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             status.HTTP_200_OK: TokenBlacklistResponseSerializer,
         }

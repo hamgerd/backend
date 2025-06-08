@@ -1,5 +1,4 @@
-from drf_yasg.openapi import Schema
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -16,14 +15,16 @@ class EmailVerifyView(GenericAPIView):
 
     serializer_class = EmailVerificationSerializer
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
-            HTTP_200_OK: Schema(
-                type="object", properties={"message": Schema(type="string", description="Success message")}
-            ),
-            HTTP_400_BAD_REQUEST: Schema(
-                type="object", properties={"error": Schema(type="string", description="Error message")}
-            ),
+            HTTP_200_OK: {
+                "type": "object",
+                "properties": {"message": {"type": "string", "description": "Success message"}},
+            },
+            HTTP_400_BAD_REQUEST: {
+                "type": "object",
+                "properties": {"error": {"type": "string", "description": "Error message"}},
+            },
         }
     )
     def get(self, request, token: str):

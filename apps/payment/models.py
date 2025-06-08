@@ -6,14 +6,14 @@ from django.utils import timezone
 
 from apps.core.models import BaseModel
 
-from ..events.utils import TicketStatus
-from .utils import BillStatus
+from ..events.choices import TicketStatusChoice
+from .choices import BillStatusChoice
 
 
 class TicketTransaction(BaseModel):
     amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     authority = models.CharField(null=True, max_length=128)
-    status = models.CharField(max_length=20, choices=BillStatus.choices(), default=BillStatus.PENDING.name)
+    status = models.CharField(max_length=20, choices=BillStatusChoice.choices, default=BillStatusChoice.PENDING.name)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(default=timezone.now, null=True)
     transaction_id = models.CharField(null=True, max_length=128)
@@ -27,12 +27,12 @@ class TicketTransaction(BaseModel):
         super().save(*args, **kwargs)
 
     def cancel(self):
-        self.status = BillStatus.CANCELLED
-        self.tickets.status = TicketStatus.CANCELLED
+        self.status = BillStatusChoice.CANCELLED
+        self.tickets.status = TicketStatusChoice.CANCELLED
         self.save()
 
     def confirm(self, ref_id):
         self.transaction_id = ref_id
-        self.status = BillStatus.CONFIRMED
-        self.tickets.status = TicketStatus.CONFIRMED
+        self.status = BillStatusChoice.SUCCESS
+        self.tickets.status = TicketStatusChoice.SUCCESS
         self.save()

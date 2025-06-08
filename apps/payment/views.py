@@ -6,13 +6,13 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .choices import CurrencyChoice
 from .models import TicketTransaction
 from .serializer import TicketTransactionSerializer
 from .service import TransactionRequest, send_payment_request, verify_payment_request
-from .utils import CurrencyEnum
 
 MERCHANT_ID = config("MERCHANT_ID")
-DEFAULT_CURRENCY = CurrencyEnum.IRT
+DEFAULT_CURRENCY = CurrencyChoice.IRT
 
 
 class PayTransactionView(GenericAPIView):

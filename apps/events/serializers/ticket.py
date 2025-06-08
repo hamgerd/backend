@@ -13,7 +13,6 @@ class TicketTypeSerializer(serializers.ModelSerializer):
 class TicketSerializer(serializers.ModelSerializer):
     ticket_type = TicketTypeSerializer(read_only=True)
     transactions = TicketTransactionSerializerPublic(read_only=True, many=False)
-    event = serializers.SerializerMethodField()
 
     class Meta:
         model = Ticket
@@ -23,20 +22,11 @@ class TicketSerializer(serializers.ModelSerializer):
             "status",
             "ticket_number",
             "notes",
-            "event",
             "created_at",
             "updated_at",
             "transactions",
         ]
         read_only_fields = ["public_id", "created_at", "updated_at", "transactions"]
-
-    def get_event(self, obj):
-        return {
-            "public_id": obj.ticket_type.event.public_id,
-            "title": obj.ticket_type.event.title,
-            "start_date": obj.ticket_type.event.start_date,
-            "end_date": obj.ticket_type.event.end_date,
-        }
 
 
 class TicketCreateSerializer(serializers.Serializer):

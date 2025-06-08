@@ -4,7 +4,7 @@ import httpx
 from django.conf import settings
 from pydantic import BaseModel, EmailStr, Field, HttpUrl
 
-from .utils import CurrencyEnum
+from .choices import CurrencyChoice
 
 ZP_API_REQUEST = settings.PAYMENT_PORTAL_BASE_URL + "pg/v4/payment/request.json"
 ZP_API_STARTPAY = settings.PAYMENT_PORTAL_BASE_URL + "pg/StartPay/"
@@ -20,7 +20,7 @@ class Metadata(BaseModel):
 class TransactionRequest(BaseModel):
     merchant_id: str = Field(..., min_length=36, max_length=36)
     amount: int = Field(..., gt=0)
-    currency: CurrencyEnum | None = None
+    currency: CurrencyChoice | None = None
     note: str
     callback_url: HttpUrl
     metadata: Metadata | None = None

@@ -4,8 +4,8 @@ from decouple import config
 from django.conf import settings
 from django.test import TestCase
 
+from .choices import CurrencyChoice
 from .service import Metadata, TransactionRequest, send_payment_request, verify_payment_request
-from .utils import CurrencyEnum
 
 MERCHANT_ID = config("MERCHANT_ID")
 
@@ -21,7 +21,7 @@ class PaymentServiceTest(TestCase):
         tx = TransactionRequest(
             merchant_id=MERCHANT_ID,
             amount=10000,
-            currency=CurrencyEnum.IRT,
+            currency=CurrencyChoice.IRT,
             note="Test payment",
             callback_url="https://example.com/callback",
             metadata=Metadata(mobile="09121234567", email="test@example.com", order_id="1234"),
@@ -43,7 +43,7 @@ class PaymentServiceTest(TestCase):
         tx = TransactionRequest(
             merchant_id=MERCHANT_ID,
             amount=5000,
-            currency=CurrencyEnum.IRT,
+            currency=CurrencyChoice.IRT,
             note="Invalid payment",
             callback_url="https://example.com/callback",
         )

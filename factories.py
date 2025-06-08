@@ -5,7 +5,7 @@ from django.utils import timezone
 from factory.django import DjangoModelFactory
 from faker import Faker
 
-from apps.events.models import Event, EventCategory, Ticket, TicketStatus, TicketType
+from apps.events.models import Event, EventCategory, Ticket, TicketStatusChoice, TicketType
 from apps.organizations.models import Organization
 from apps.users.models import User  # Update this to your actual user model path
 
@@ -66,6 +66,6 @@ class TicketFactory(DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     ticket_type = factory.SubFactory(TicketTypeFactory)
-    status = TicketStatus.PENDING.value
+    status = TicketStatusChoice.PENDING.value
     ticket_number = factory.LazyFunction(lambda: fake.uuid4())
     notes = factory.Faker("sentence")
