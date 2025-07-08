@@ -67,8 +67,8 @@ class TicketViewSet(
         if getattr(self, "swagger_fake_view", False):
             return Ticket.objects.none()
 
-        event_id = self.kwargs["event_id"]
-        return Ticket.objects.filter(event=event_id)
+        event_id = self.kwargs["event_public_id"]
+        return Ticket.objects.filter(ticket_type__event__public_id=event_id)
 
     def get_serializer_class(self):
         if self.action == "create_by_type":

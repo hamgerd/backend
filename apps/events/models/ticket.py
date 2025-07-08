@@ -48,7 +48,7 @@ class Ticket(BaseModel):
         verbose_name_plural = "Tickets"
 
     def __str__(self):
-        return f"Ticket {self.ticket_number} - {self.event.title}"
+        return f"Ticket {self.ticket_number} - {self.ticket_type.event.title}"
 
     def clean(self):
         """Validate ticket data"""
@@ -62,7 +62,8 @@ class Ticket(BaseModel):
                 raise ValidationError("Event has reached maximum participants.")
 
     def save(self, *args, **kwargs):
-        self.ticket_number = self.ticket_type.tickets.filter(status=TicketStatusChoice.SUCCESS).count() + 1
+        if self.pk is None:
+            self.ticket_number = self.ticket_type.tickets.filter(status=TicketStatusChoice.SUCCESS).count() + 1
         self.full_clean()
         super().save(*args, **kwargs)
 

@@ -26,7 +26,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "updated_at",
             "transactions",
         ]
-        read_only_fields = ["public_id", "created_at", "updated_at", "transactions"]
+        read_only_fields = ["public_id", "created_at", "updated_at", "transactions", "status"]
 
 
 class TicketCreateSerializer(serializers.Serializer):
