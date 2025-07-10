@@ -14,32 +14,19 @@ ZP_API_VERIFY = settings.PAYMENT_PORTAL_BASE_URL + "pg/v4/payment/verify.json"
 class Metadata(BaseModel):
     mobile: str | None = None
     email: EmailStr | None = None
-    order_id: str | None = None
 
 
 class TransactionRequest(BaseModel):
     merchant_id: str = Field(..., min_length=36, max_length=36)
-    amount: int = Field(..., gt=0)
+    amount: int = Field(..., gt=1000)
     currency: CurrencyChoice | None = None
-    note: str | None = None
+    note: str
     callback_url: HttpUrl
     metadata: Metadata | None = None
 
 
 def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
-    payload = {
-        "merchant_id": tx.merchant_id,
-        "amount": tx.amount,
-        "description": tx.note if tx.note else "",
-        "callback_url": str(tx.callback_url),
-    }
-
-    if tx.metadata:
-        payload["metadata"] = {}
-        if tx.metadata.mobile:
-            payload["metadata"]["mobile"] = tx.metadata.mobile
-        if tx.metadata.email:
-            payload["metadata"]["email"] = str(tx.metadata.email)
+    payload = tx.model_dump()
 
     try:
         with httpx.Client(timeout=10) as client:

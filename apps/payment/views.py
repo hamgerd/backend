@@ -26,6 +26,7 @@ class PayTransactionView(GenericAPIView):
             merchant_id=MERCHANT_ID,
             amount=int(bill.amount),
             currency=DEFAULT_CURRENCY,
+            note=str(TicketTransaction),
             callback_url=settings.CALLBACK_URL,
         )
         response = send_payment_request(ta_req)
