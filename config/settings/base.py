@@ -147,6 +147,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.verification.tasks.auto_delete_expired_verification_tokens",
         "schedule": timedelta(minutes=15),
     },
+    "invalidate_transactions": {
+        "task": "apps.payment.tasks.invalidate_transactions",
+        "schedule": timedelta(minutes=1),
+    },
 }
 
 # Minio
