@@ -35,10 +35,11 @@ def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
     }
 
     if tx.metadata:
+        payload["metadata"] = {}
         if tx.metadata.mobile:
-            payload["mobile"] = tx.metadata.mobile
+            payload["metadata"]["mobile"] = tx.metadata.mobile
         if tx.metadata.email:
-            payload["email"] = str(tx.metadata.email)
+            payload["metadata"]["email"] = str(tx.metadata.email)
 
     try:
         with httpx.Client(timeout=10) as client:
