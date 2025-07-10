@@ -20,7 +20,7 @@ class PayTransactionView(GenericAPIView):
     serializer_class = TicketTransactionSerializer
 
     def post(self, request, transaction):
-        bill = get_object_or_404(TicketTransaction, public_id=transaction, paid_by=request.user)
+        bill = get_object_or_404(TicketTransaction, public_id=transaction, tickets_user=request.user)
 
         ta_req = TransactionRequest(
             merchant_id=MERCHANT_ID,
@@ -33,7 +33,7 @@ class PayTransactionView(GenericAPIView):
         if response["status"] == 200:
             bill.authority = response["authority"]
             bill.save()
-            return redirect(response["response"])
+            return redirect(response["url"])
         else:
             return Response(response, status=400)
 

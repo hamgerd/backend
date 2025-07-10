@@ -28,19 +28,17 @@ class TransactionRequest(BaseModel):
 
 def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
     payload = {
-        "MerchantID": tx.merchant_id,
-        "Amount": tx.amount,
-        "Description": tx.note,
-        "CallbackURL": str(tx.callback_url),
+        "merchant_id": tx.merchant_id,
+        "amount": tx.amount,
+        "description": tx.note,
+        "callback_url": str(tx.callback_url),
     }
 
     if tx.metadata:
         if tx.metadata.mobile:
-            payload["Phone"] = tx.metadata.mobile
+            payload["mobile"] = tx.metadata.mobile
         if tx.metadata.email:
-            payload["Email"] = str(tx.metadata.email)
-        if tx.metadata.order_id:
-            payload["OrderId"] = tx.metadata.order_id
+            payload["email"] = str(tx.metadata.email)
 
     try:
         with httpx.Client(timeout=10) as client:
