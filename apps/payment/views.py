@@ -19,8 +19,8 @@ class PayTransactionView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TicketTransactionSerializer
 
-    def post(self, request, bill_id):
-        bill = get_object_or_404(TicketTransaction, id=bill_id, paid_by=request.user)
+    def post(self, request, transaction):
+        bill = get_object_or_404(TicketTransaction, id=transaction, paid_by=request.user)
 
         ta_req = TransactionRequest(
             merchant_id=MERCHANT_ID,
