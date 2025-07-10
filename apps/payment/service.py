@@ -30,7 +30,7 @@ def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
     payload = {
         "merchant_id": tx.merchant_id,
         "amount": tx.amount,
-        "description": tx.note,
+        "description": tx.note if tx.note else "",
         "callback_url": str(tx.callback_url),
     }
 
