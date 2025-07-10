@@ -21,7 +21,7 @@ class TransactionRequest(BaseModel):
     merchant_id: str = Field(..., min_length=36, max_length=36)
     amount: int = Field(..., gt=0)
     currency: CurrencyChoice | None = None
-    note: str
+    note: str | None = None
     callback_url: HttpUrl
     metadata: Metadata | None = None
 

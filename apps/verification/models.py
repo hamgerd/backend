@@ -1,13 +1,11 @@
 from random import randbytes
 
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from apps.core.models import BaseModel
 from apps.verification.choices import VerificationTypeChoices
-
-USER = get_user_model()
 
 
 def generate_token():
@@ -20,7 +18,7 @@ class VerificationToken(BaseModel):
     """
 
     token = models.CharField(max_length=64, default=generate_token, editable=False)
-    user = models.ForeignKey(to=USER, on_delete=models.CASCADE, related_name="verification_tokens")
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="verification_tokens")
     type = models.CharField(max_length=20, choices=VerificationTypeChoices.choices)
     created_at = models.DateTimeField(auto_now_add=True)
     expire_at = models.DateTimeField()

@@ -18,6 +18,9 @@ class TicketTransaction(BaseModel):
     paid_at = models.DateTimeField(default=timezone.now, null=True)
     transaction_id = models.CharField(null=True, max_length=128)
 
+    def __str__(self):
+        return f"Transaction {self.id}/{self.public_id} - {self.amount}"
+
     @property
     def expires_at(self):
         return self.created_at + timedelta(minutes=15)
