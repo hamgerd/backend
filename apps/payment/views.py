@@ -20,7 +20,7 @@ class PayTransactionView(GenericAPIView):
     serializer_class = TicketTransactionSerializer
 
     def post(self, request, transaction):
-        bill = get_object_or_404(TicketTransaction, id=transaction, paid_by=request.user)
+        bill = get_object_or_404(TicketTransaction, public_id=transaction, paid_by=request.user)
 
         ta_req = TransactionRequest(
             merchant_id=MERCHANT_ID,
