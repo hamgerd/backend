@@ -65,7 +65,7 @@ def verify_payment_request(authority: str, amount: int, merchant_id) -> dict[str
 
         data = response.json().get("data", {})
         if data.get("code") == 100:
-            return {"status": True, "RefID": data["ref_id"]}
+            return {"status": True, "data": data}
         return {"status": False, "code": str(data.get("code", "unknown"))}
 
     except httpx.TimeoutException:

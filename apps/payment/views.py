@@ -6,7 +6,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .choices import CurrencyChoice
+from .choices import CurrencyChoice, BillStatusChoice
 from .models import TicketTransaction
 from .serializer import TicketTransactionSerializer
 from .service import TransactionRequest, send_payment_request, verify_payment_request
@@ -20,7 +20,12 @@ class PayTransactionView(GenericAPIView):
     serializer_class = TicketTransactionSerializer
 
     def post(self, request, transaction):
-        bill = get_object_or_404(TicketTransaction, public_id=transaction, tickets__user=request.user)
+        bill = TicketTransaction.objects.filter(
+            public_id=transaction,
+            tickets__user=request.user,
+            status=BillStatusChoice.PENDING
+        ).distinct().get()
+        print(bill)
 
         ta_req = TransactionRequest(
             merchant_id=MERCHANT_ID,
@@ -44,11 +49,17 @@ class VerifyPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, authority):
-        ticket_transaction = get_object_or_404(TicketTransaction, authority=authority)
+        ticket_transaction = TicketTransaction.objects.filter(
+            authority=authority,
+            tickets__user=request.user,
+            status=BillStatusChoice.PENDING
+        ).distinct().get()
+
         response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
 
         if response["status"]:
-            ticket_transaction.confirm(response["ref_id"])
-            return Response({"message": "Payment verified", "ref_id": response["ref_id"]})
+            ref_id = response["data"]["ref_id"]
+            ticket_transaction.confirm(ref_id)
+            return Response({"message": "Payment verified", "ref_id": ref_id})
         else:
             return Response(response, status=400)
