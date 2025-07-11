@@ -34,7 +34,7 @@ class PayTransactionView(GenericAPIView):
         if response["status"]:
             bill.authority = response["authority"]
             bill.save()
-            return redirect(response["url"])
+            return Response(response,status=200)
         else:
             return Response(response, status=400)
 
