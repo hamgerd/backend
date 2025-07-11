@@ -26,12 +26,12 @@ class PayTransactionView(GenericAPIView):
             merchant_id=MERCHANT_ID,
             amount=int(bill.amount),
             currency=DEFAULT_CURRENCY,
-            note=str(TicketTransaction),
+            description="Test Description",
             callback_url=settings.CALLBACK_URL,
         )
         response = send_payment_request(ta_req)
 
-        if response["status"] == 200:
+        if response["status"]:
             bill.authority = response["authority"]
             bill.save()
             return redirect(response["url"])
@@ -47,7 +47,7 @@ class VerifyPaymentView(APIView):
         ticket_transaction = get_object_or_404(TicketTransaction, authority=authority)
         response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
 
-        if response["status"] == 100:
+        if response["status"]:
             ticket_transaction.confirm(response["ref_id"])
             return Response({"message": "Payment verified", "ref_id": response["ref_id"]})
         else:

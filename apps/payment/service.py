@@ -20,19 +20,19 @@ class TransactionRequest(BaseModel):
     merchant_id: str = Field(..., min_length=36, max_length=36)
     amount: int = Field(..., gt=1000)
     currency: CurrencyChoice | None = None
-    note: str
+    description: str
     callback_url: HttpUrl
     metadata: Metadata | None = None
 
 
 def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
-    payload = tx.model_dump_json()
-
+    payload = tx.model_dump(mode="json", exclude_none=True)
+    print(payload)
     try:
-        with httpx.Client(timeout=10) as client:
+        with httpx.Client(timeout=20) as client:
             response = client.post(ZP_API_REQUEST, json=payload)
         if response.status_code != 200:
-            return {"status": False, "code": f"HTTP {response.status_code}"}
+            return {"status": False, "code": f"HTTP {response.status_code}", "response":response.content}
 
         data = response.json().get("data", {})
         if data.get("code") == 100:
@@ -52,16 +52,16 @@ def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
 
 def verify_payment_request(authority: str, amount: int, merchant_id) -> dict[str, Any]:
     payload = {
-        "MerchantID": merchant_id,
-        "Amount": amount,
-        "Authority": authority,
+        "merchant_id": merchant_id,
+        "amount": int(amount),
+        "authority": authority,
     }
 
     try:
         with httpx.Client(timeout=10) as client:
             response = client.post(ZP_API_VERIFY, json=payload)
         if response.status_code != 200:
-            return {"status": False, "code": f"HTTP {response.status_code}"}
+            return {"status": False, "code": f"HTTP {response.status_code}", "response":response.content}
 
         data = response.json().get("data", {})
         if data.get("code") == 100:
