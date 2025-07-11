@@ -26,7 +26,7 @@ class TransactionRequest(BaseModel):
 
 
 def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
-    payload = tx.model_dump()
+    payload = tx.model_dump_json()
 
     try:
         with httpx.Client(timeout=10) as client:
