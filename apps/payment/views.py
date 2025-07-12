@@ -20,15 +20,17 @@ class PayTransactionView(GenericAPIView):
     serializer_class = TicketTransactionSerializer
 
     def post(self, request, transaction):
-        bill = TicketTransaction.objects.filter(
+        ticket_transaction = TicketTransaction.objects.filter(
             public_id=transaction,
             tickets__user=request.user,
             status=BillStatusChoice.PENDING.name
-        ).distinct().get()
+        ).distinct()
+
+        ticket_transaction = get_object_or_404(ticket_transaction)
 
         ta_req = TransactionRequest(
             merchant_id=MERCHANT_ID,
-            amount=int(bill.amount),
+            amount=int(ticket_transaction.amount),
             currency=DEFAULT_CURRENCY,
             description="Test Description",
             callback_url=settings.CALLBACK_URL,
@@ -36,8 +38,8 @@ class PayTransactionView(GenericAPIView):
         response = send_payment_request(ta_req)
 
         if response["status"]:
-            bill.authority = response["authority"]
-            bill.save()
+            ticket_transaction.authority = response["authority"]
+            ticket_transaction.save()
             return Response(response,status=200)
         else:
             return Response(response, status=400)
@@ -51,14 +53,20 @@ class VerifyPaymentView(APIView):
         ticket_transaction = TicketTransaction.objects.filter(
             authority=authority,
             tickets__user=request.user,
-            status=BillStatusChoice.PENDING.name
-        ).distinct().get()
+        ).distinct()
 
-        response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
+        ticket_transaction = get_object_or_404(ticket_transaction)
+        ref_id = ticket_transaction.transaction_id
 
-        if response["status"]:
-            ref_id = response["data"]["ref_id"]
-            ticket_transaction.confirm(ref_id)
-            return Response({"message": "Payment verified", "ref_id": ref_id})
-        else:
-            return Response(response, status=400)
+        if ticket_transaction.status == BillStatusChoice.PENDING:
+            if ticket_transaction.status != BillStatusChoice.CANCELLED:
+                response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
+                if response["status"]:
+                    ref_id = response["data"]["ref_id"]
+                    ticket_transaction.confirm(ref_id)
+                else:
+                    return Response(response, status=400)
+        elif ticket_transaction.status == BillStatusChoice.SUCCESS:
+            ref_id = ticket_transaction.transaction_id
+
+        return Response({"message": "Payment verified", "ref_id": ref_id})
