@@ -145,7 +145,7 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BEAT_SCHEDULE = {
     "auto_delete_expired_verification_tokens": {
         "task": "apps.verification.tasks.auto_delete_expired_verification_tokens",
-        "schedule": timedelta(minutes=15),
+        "schedule": timedelta(hours=1),
     },
     "invalidate_transactions": {
         "task": "apps.payment.tasks.invalidate_transactions",

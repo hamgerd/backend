@@ -83,7 +83,7 @@ class UserRegisterView(GenericAPIView):
         return VerificationToken.objects.create(
             user=user,
             type=VerificationTypeChoices.EMAIL,
-            expire_at=timezone.now() + timedelta(minutes=15),
+            expire_at=timezone.now() + timedelta(days=2),
         )
 
 
