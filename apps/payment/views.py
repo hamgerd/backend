@@ -23,9 +23,8 @@ class PayTransactionView(GenericAPIView):
         bill = TicketTransaction.objects.filter(
             public_id=transaction,
             tickets__user=request.user,
-            status=BillStatusChoice.PENDING
+            status=BillStatusChoice.PENDING.name
         ).distinct().get()
-        print(bill)
 
         ta_req = TransactionRequest(
             merchant_id=MERCHANT_ID,
@@ -52,7 +51,7 @@ class VerifyPaymentView(APIView):
         ticket_transaction = TicketTransaction.objects.filter(
             authority=authority,
             tickets__user=request.user,
-            status=BillStatusChoice.PENDING
+            status=BillStatusChoice.PENDING.name
         ).distinct().get()
 
         response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
