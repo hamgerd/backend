@@ -58,15 +58,17 @@ class VerifyPaymentView(APIView):
         ticket_transaction = get_object_or_404(ticket_transaction)
         ref_id = ticket_transaction.transaction_id
 
-        if ticket_transaction.status == BillStatusChoice.PENDING:
-            if ticket_transaction.status != BillStatusChoice.CANCELLED:
+        if ticket_transaction.status != BillStatusChoice.CANCELLED:
+            if ticket_transaction.status == BillStatusChoice.PENDING:
                 response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
                 if response["status"]:
                     ref_id = response["data"]["ref_id"]
                     ticket_transaction.confirm(ref_id)
                 else:
                     return Response(response, status=400)
-        elif ticket_transaction.status == BillStatusChoice.SUCCESS:
-            ref_id = ticket_transaction.transaction_id
+            elif ticket_transaction.status == BillStatusChoice.SUCCESS:
+                ref_id = ticket_transaction.transaction_id
+        else:
+            return Response({"message":"transaction canceled"}, status=400)
 
         return Response({"message": "Payment verified", "ref_id": ref_id})
