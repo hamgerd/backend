@@ -19,7 +19,7 @@ class OrganizationOwnerPermission(permissions.BasePermission):
 
         # Get the organization
         try:
-            organization = Organization.objects.get(id=request.data["organization"])
+            organization = Organization.objects.get(public_id=request.data["organization"])
             return organization.owner == request.user
         except Organization.DoesNotExist:
             return False

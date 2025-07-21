@@ -40,5 +40,5 @@ class Organization(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.logo:
-            add_default_image(self)
+            add_default_image(self, image_field_name="logo")
         super().save(*args, **kwargs)
