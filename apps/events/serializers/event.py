@@ -1,8 +1,9 @@
 from rest_framework import serializers
 
+from apps.organizations.models import Organization
 from apps.organizations.serializer import OrganizationSerializer
 
-from ..models import Event, TicketType
+from ..models import Event, EventCategory, TicketType
 from .ticket import TicketTypeSerializer
 
 
@@ -33,6 +34,8 @@ class EventSerializer(serializers.ModelSerializer):
 
 class EventCreateSerializer(serializers.ModelSerializer):
     ticket_types = TicketTypeSerializer(many=True)
+    organization = serializers.SlugRelatedField(slug_field="public_id", queryset=Organization.objects.all())
+    category = serializers.SlugRelatedField(slug_field="public_id", queryset=EventCategory.objects.all())
 
     def create(self, validated_data):
         ticket_types_data = validated_data.pop("ticket_types")
