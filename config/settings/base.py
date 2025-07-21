@@ -19,6 +19,7 @@ LOCAL_APPS = [
     "apps.news.apps.NewsConfig",
 ]
 THIRD_PARY_APPS = [
+    "django_filters",
     "drf_spectacular",
     "rest_framework",
     "corsheaders",

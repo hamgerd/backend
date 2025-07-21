@@ -1,3 +1,4 @@
+from django_filters import rest_framework as filters
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -6,6 +7,7 @@ from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from .filters import EventFilter
 from .models import Event, Speaker, Ticket
 from .permissions import IsOrganizationOwnerThroughPermission, OrganizationOwnerPermission
 from .serializers import (
@@ -31,6 +33,8 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, OrganizationOwnerPermission]
     lookup_field = "public_id"
     lookup_url_kwarg = "public_id"
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = EventFilter
 
     def get_serializer_class(self):
         match self.action:
