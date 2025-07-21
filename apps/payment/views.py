@@ -24,7 +24,7 @@ class PayTransactionView(GenericAPIView):
         ticket_transaction = TicketTransaction.objects.filter(
             public_id=transaction,
             tickets__user=request.user,
-            status=BillStatusChoice.PENDING.name
+            status=BillStatusChoice.PENDING.value
         ).distinct()
 
         ticket_transaction = get_object_or_404(ticket_transaction)
