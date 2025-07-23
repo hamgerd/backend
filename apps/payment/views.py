@@ -30,7 +30,7 @@ class PayTransactionView(GenericAPIView):
         ticket_transaction = get_object_or_404(ticket_transaction)
 
         if ticket_transaction.amount < BASE_AMOUNT:
-            ticket_transaction.status = BillStatusChoice.SUCCESS.value
+            ticket_transaction.confirm(ticket_transaction.public_id)
             ticket_transaction.authority = ticket_transaction.public_id
             ticket_transaction.save()
             return Response({"message": "Payment verified", "authority": ticket_transaction.public_id})
@@ -74,6 +74,7 @@ class VerifyPaymentView(APIView):
                     ref_id = response["data"]["ref_id"]
                     ticket_transaction.confirm(ref_id)
                 else:
+                    ticket_transaction.cancel()
                     return Response(response, status=400)
 
             case BillStatusChoice.SUCCESS: ...

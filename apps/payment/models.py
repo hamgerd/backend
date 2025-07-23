@@ -31,11 +31,11 @@ class TicketTransaction(BaseModel):
 
     def cancel(self):
         self.status = BillStatusChoice.CANCELLED
-        self.tickets.status = TicketStatusChoice.CANCELLED
+        self.tickets.update(status=TicketStatusChoice.CANCELLED)
         self.save()
 
     def confirm(self, ref_id):
         self.transaction_id = ref_id
         self.status = BillStatusChoice.SUCCESS
-        self.tickets.status = TicketStatusChoice.SUCCESS
+        self.tickets.update(status=TicketStatusChoice.SUCCESS)
         self.save()
