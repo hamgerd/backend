@@ -1,4 +1,4 @@
-.PHONY: migrations migrate run shell superuser collectstatic worker codegen swagger help test test-coverage lint test-all
+.PHONY: migrations migrate run shell superuser collectstatic worker codegen swagger help test test-coverage lint test-all prepare
 
 python3 = uv run python3
 

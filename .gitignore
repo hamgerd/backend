@@ -1077,3 +1077,5 @@ cython_debug/
 .idea/
 
 .api
+
+docker-compose.yaml
