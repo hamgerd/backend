@@ -13,7 +13,7 @@ RUN addgroup -S neshast \
     && adduser -S neshast -G neshast -s /bin/bash \
     && chown -R neshast:neshast /app \
     && apk update \
-    && apk add make \
+    && apk add make curl \
     && uv sync --frozen
 
 USER neshast

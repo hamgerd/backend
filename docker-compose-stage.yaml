@@ -5,9 +5,15 @@ services:
     volumes:
       - logs:/app/logs
     env_file:
-      - .env
+      - .env.stage
     ports:
       - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health/" ]
+      interval: 30s
+      retries: 3
+      start_period: 5s
+      timeout: 5s
     depends_on:
       postgresql:
         condition: service_started

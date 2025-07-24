@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from apps.core.views import HealthCheckAPI
+
 API_VERSION = "v1"
 
 
@@ -16,6 +18,10 @@ api_patterns = [
 ]
 
 urlpatterns = [
+    # Healthcheck
+    path("health/", HealthCheckAPI.as_view(), name="health"),
+    # Admin
     path("admin/", admin.site.urls),
+    # Service
     path(f"api/{API_VERSION}/", include(api_patterns)),
 ]
