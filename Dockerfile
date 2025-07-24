@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye
+FROM ghcr.io/astral-sh/uv:python3.12-alpine
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -9,11 +9,11 @@ COPY --from=ghcr.io/astral-sh/uv:0.6.10 /uv /uvx /bin/
 
 COPY . .
 
-RUN useradd -ms /bin/bash neshast \
+RUN addgroup -S neshast \
+    && adduser -S neshast -G neshast -s /bin/bash \
     && chown -R neshast:neshast /app \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends make \
-    && rm -rf /var/lib/apt/lists/* \
+    && apk update \
+    && apk add make \
     && uv sync --frozen
 
 USER neshast
