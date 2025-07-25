@@ -82,6 +82,8 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+    env_file:
+      - .env.development
     environment:
       MINIO_ROOT_USER: ${MINIO_STORAGE_ACCESS_KEY}
       MINIO_ROOT_PASSWORD: ${MINIO_STORAGE_SECRET_KEY}
@@ -93,7 +95,7 @@ services:
       timeout: 5s
     command: server /data --console-address ":9001"
     networks:
-      - neshast
+      - main_net
 
   mc:
     image: minio/mc:RELEASE.2025-07-21T05-28-08Z-cpuv1
