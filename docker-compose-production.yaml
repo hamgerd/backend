@@ -41,7 +41,7 @@ services:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config worker -l INFO
     env_file:
-      - .env
+      - .env.production
     depends_on:
       redis:
         condition: service_started
@@ -54,7 +54,7 @@ services:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config beat -l INFO
     env_file:
-      - .env
+      - .env.production
     depends_on:
       redis:
         condition: service_started

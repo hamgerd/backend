@@ -32,6 +32,8 @@ services:
     image: postgres:17
     ports:
       - 5432:5432
+    env_file:
+      - .env.stage
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
@@ -41,7 +43,7 @@ services:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config worker -l INFO
     env_file:
-      - .env
+      - .env.stage
     depends_on:
       redis:
         condition: service_started
@@ -54,7 +56,7 @@ services:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config beat -l INFO
     env_file:
-      - .env
+      - .env.stage
     depends_on:
       redis:
         condition: service_started

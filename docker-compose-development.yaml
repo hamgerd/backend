@@ -22,7 +22,7 @@ services:
       smtp4dev:
         condition: service_started
     networks:
-      - neshast
+      - main_net
 
   worker:
     build:
@@ -32,14 +32,14 @@ services:
       - .:/app
       - /app/.venv
     env_file:
-      - .env
+      - .env.development
     depends_on:
       redis:
         condition: service_started
       smtp4dev:
         condition: service_started
     networks:
-      - neshast
+      - main_net
 
   beat:
     build:
@@ -49,21 +49,21 @@ services:
       - .:/app
       - /app/.venv
     env_file:
-      - .env
+      - .env.development
     depends_on:
       redis:
         condition: service_started
       smtp4dev:
         condition: service_started
     networks:
-      - neshast
+      - main_net
 
   redis:
     image: redis:7.4.2-alpine
     ports:
       - "6379:6379"
     networks:
-      - neshast
+      - main_net
 
   smtp4dev:
     image: rnwood/smtp4dev:3.7.0-ci20250120116
@@ -71,11 +71,13 @@ services:
       - "5000:80"  # Web UI
       - "2525:25"
     networks:
-      - neshast
+      - main_net
 
 volumes:
   logs:
 
 networks:
-  neshast:
+  main_net:
+    external:
+      true
 
