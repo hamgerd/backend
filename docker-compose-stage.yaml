@@ -16,11 +16,11 @@ services:
       timeout: 5s
     depends_on:
       postgresql:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       mailserver:
-        condition: service_started
+        condition: service_healthy
       minio:
         condition: service_healthy
       mc:
@@ -38,6 +38,14 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - main_net
 
   worker:
     image: mirsobhan/neshast-backend:latest
