@@ -154,26 +154,6 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# Minio
-AWS_S3_ENDPOINT_URL = config("MINIO_STORAGE_ENDPOINT")
-AWS_ACCESS_KEY_ID = config("MINIO_STORAGE_ACCESS_KEY")
-AWS_SECRET_ACCESS_KEY = config("MINIO_STORAGE_SECRET_KEY")
-
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {
-            "bucket_name": config("MINIO_DEFAULT_STORAGE_BUCKET_NAME", "media"),
-            "default_acl": "public-read",
-            "file_overwrite": False,
-        },
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {"bucket_name": config("MINIO_STATIC_STORAGE_BUCKET_NAME", "static")},
-    },
-}
-
 # External Urls
 EMAIL_VERIFICATION_URL = config("EMAIL_VERIFICATION_URL")
 PASSWORD_RESET_URL = config("PASSWORD_RESET_URL")

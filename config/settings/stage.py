@@ -22,5 +22,25 @@ INSTALLED_APPS += [
     "django_extensions",
 ]
 
+# Minio
+AWS_S3_ENDPOINT_URL = config("MINIO_STORAGE_ENDPOINT")
+AWS_ACCESS_KEY_ID = config("MINIO_STORAGE_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = config("MINIO_STORAGE_SECRET_KEY")
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": config("MINIO_DEFAULT_STORAGE_BUCKET_NAME", "media"),
+            "default_acl": "public-read",
+            "file_overwrite": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {"bucket_name": config("MINIO_STATIC_STORAGE_BUCKET_NAME", "static")},
+    },
+}
+
 PAYMENT_PORTAL_BASE_URL = "https://sandbox.zarinpal.com/"
 CALLBACK_URL = "https://test.hamgerd.ir/verify/"
