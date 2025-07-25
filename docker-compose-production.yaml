@@ -19,7 +19,7 @@ services:
         condition: service_started
       redis:
         condition: service_started
-      smtp4dev:
+      mailserver:
         condition: service_started
       minio:
         condition: service_healthy
@@ -45,7 +45,7 @@ services:
     depends_on:
       redis:
         condition: service_started
-      smtp4dev:
+      mailserver:
         condition: service_started
     networks:
       - main_net
@@ -58,7 +58,7 @@ services:
     depends_on:
       redis:
         condition: service_started
-      smtp4dev:
+      mailserver:
         condition: service_started
     networks:
       - main_net
@@ -70,11 +70,32 @@ services:
     networks:
       - main_net
 
-  smtp4dev:
-    image: rnwood/smtp4dev:3.7.0-ci20250120116
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    container_name: mailserver
+    hostname: mail.example.com
+    env_file: mailserver.env
     ports:
-      - "5000:80"  # Web UI
-      - "2525:25"
+      - "25:25"    # SMTP  (explicit TLS => STARTTLS, Authentication is DISABLED => use port 465/587 instead)
+      - "143:143"  # IMAP4 (explicit TLS => STARTTLS)
+      - "465:465"  # ESMTP (implicit TLS)
+      - "587:587"  # ESMTP (explicit TLS => STARTTLS)
+      - "993:993"  # IMAP4 (implicit TLS)
+    volumes:
+      - ./docker-data/dms/mail-data/:/var/mail/
+      - ./docker-data/dms/mail-state/:/var/mail-state/
+      - ./docker-data/dms/mail-logs/:/var/log/mail/
+      - ./docker-data/dms/config/:/tmp/docker-mailserver/
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    stop_grace_period: 1m
+    # Uncomment if using `ENABLE_FAIL2BAN=1`:
+    # cap_add:
+    #   - NET_ADMIN
+    healthcheck:
+      test: "ss --listening --ipv4 --tcp | grep --silent ':smtp' || exit 1"
+      timeout: 3s
+      retries: 0
     networks:
       - main_net
 
