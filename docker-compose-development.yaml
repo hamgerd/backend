@@ -115,6 +115,4 @@ volumes:
 
 networks:
   main_net:
-    external:
-      true
 
