@@ -21,6 +21,3 @@ REST_FRAMEWORK.update(REST_FRAMEWORK_BASE)
 INSTALLED_APPS += [
     "django_extensions",
 ]
-
-PAYMENT_PORTAL_BASE_URL = "https://sandbox.zarinpal.com/"
-CALLBACK_URL = "https://test.hamgerd.ir/verify/"

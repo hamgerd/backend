@@ -11,6 +11,3 @@ REST_FRAMEWORK_PRODUCTION = {
 }
 
 REST_FRAMEWORK.update(REST_FRAMEWORK_PRODUCTION)
-
-PAYMENT_PORTAL_BASE_URL = "https://payment.zarinpal.com"
-CALLBACK_URL = "https://hamgerd.ir/payment/verify/"

@@ -1,90 +1,81 @@
 services:
   backend:
     image: mirsobhan/neshast-backend:latest
-    command: sh -c "make collectstatic && make run address=0.0.0.0:8000"
+    command: sh -c "make collectstatic && gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - logs:/app/logs
     env_file:
-      - .env.stage
+      - env/stage/django.env
     ports:
-      - "8000:8000"
+      - "8000:8080"
+    depends_on:
+      postgresql:
+        condition: service_started
+      redis:
+        condition: service_started
+      mailserver:
+        condition: service_started
+      minio:
+        condition: service_healthy
+      mc:
+        condition: service_completed_successfully
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health/" ]
       interval: 30s
       retries: 3
       start_period: 5s
       timeout: 5s
-    depends_on:
-      postgresql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      mailserver:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      mc:
-        condition: service_completed_successfully
     networks:
-      - main_net
+      - internal_net
+      - external_net
 
   postgresql:
     image: postgres:17
-    ports:
-      - 5432:5432
     env_file:
-      - .env.stage
+      - env/stage/postgres.env
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: always
     networks:
-      - main_net
+      - internal_net
 
   worker:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config worker -l INFO
     env_file:
-      - .env.stage
+      - env/stage/django.env
     depends_on:
       redis:
         condition: service_started
       mailserver:
         condition: service_started
     networks:
-      - main_net
+      - internal_net
 
   beat:
     image: mirsobhan/neshast-backend:latest
     command: uv run celery -A config beat -l INFO
     env_file:
-      - .env.stage
+      - env/stage/django.env
     depends_on:
       redis:
         condition: service_started
       mailserver:
         condition: service_started
     networks:
-      - main_net
+      - internal_net
 
   redis:
     image: redis:7.4.2-alpine
-    ports:
-      - "6379:6379"
     networks:
-      - main_net
+      - internal_net
 
   mailserver:
     image: ghcr.io/docker-mailserver/docker-mailserver:latest
     container_name: mailserver
     hostname: mail.example.com
-    env_file: mailserver.env
+    env_file: env/stage/mailserver.env
     ports:
       - "25:25"    # SMTP  (explicit TLS => STARTTLS, Authentication is DISABLED => use port 465/587 instead)
       - "143:143"  # IMAP4 (explicit TLS => STARTTLS)
@@ -107,7 +98,8 @@ services:
       timeout: 3s
       retries: 0
     networks:
-      - main_net
+      - internal_net
+      - external_net
 
   minio:
     image: minio/minio:RELEASE.2025-07-18T21-56-31Z-cpuv1
@@ -115,7 +107,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     env_file:
-      - .env.stage
+      - env/stage/minio.env
     environment:
       MINIO_ROOT_USER: ${MINIO_STORAGE_ACCESS_KEY}
       MINIO_ROOT_PASSWORD: ${MINIO_STORAGE_SECRET_KEY}
@@ -127,7 +119,8 @@ services:
       timeout: 5s
     command: server /data --console-address ":9001"
     networks:
-      - main_net
+      - internal_net
+      - external_net
 
   mc:
     image: minio/mc:RELEASE.2025-07-21T05-28-08Z-cpuv1
@@ -135,19 +128,21 @@ services:
       minio:
         condition: service_healthy
     env_file:
-      - .env.stage
+      - env/stage/minio.env
     entrypoint: >
       /bin/sh -c "
       until (/usr/bin/mc alias set myminio http://minio:9000 ${MINIO_STORAGE_ACCESS_KEY} ${MINIO_STORAGE_SECRET_KEY}) do echo 'waiting for minio'; sleep 3; done;
       /usr/bin/mc mb --ignore-existing myminio/static myminio/media;
       "
     networks:
-      - main_net
+      - internal_net
 
 volumes:
   logs:
 
 networks:
-  main_net:
-    external:
-      true
+  internal_net:
+    driver: bridge
+  external_net:
+    external: true
+    name: main_net
