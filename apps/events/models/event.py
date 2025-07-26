@@ -31,6 +31,11 @@ class Event(BaseModel):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # TODO: AA event state = {Canceled, Scheduled, Paused, Draft, Completed}
+    # TODO: AB external_url for redirecting to user landing page
+    # TODO: AC registration_deadline, registration_opening
+    # TODO: AD add geo_location field
+    # TODO: AE add faq field to get and return json
 
     class Meta:
         ordering = ["-start_date"]
@@ -58,3 +63,6 @@ class Event(BaseModel):
     @property
     def max_participants(self) -> int:
         return sum([item.max_participants for item in self.ticket_types.all()])
+
+    def is_open_to_register(self):
+        """ TODO: Based on AA, AC calculate the event is between registration_opening and registration_deadline and state = Scheduled """
