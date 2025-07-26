@@ -6,6 +6,7 @@ services:
       - logs:/app/logs
     env_file:
       - env/production/django.env
+      - env/production/minio.env
     ports:
       - "8000:8000"
     depends_on:
@@ -45,6 +46,7 @@ services:
     command: uv run celery -A config worker -l INFO
     env_file:
       - env/production/django.env
+      - env/production/minio.env
     depends_on:
       redis:
         condition: service_started
@@ -58,6 +60,7 @@ services:
     command: uv run celery -A config beat -l INFO
     env_file:
       - env/production/django.env
+      - env/production/minio.env
     depends_on:
       redis:
         condition: service_started
