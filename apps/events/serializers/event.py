@@ -24,6 +24,7 @@ class EventSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "location",
+            "geo_location",
             "max_participants",
             "is_active",
             "created_at",
@@ -32,10 +33,17 @@ class EventSerializer(serializers.ModelSerializer):
         read_only_fields = ["public_id", "created_at", "updated_at"]
 
 
+class GeoLocationSerializer(serializers.Serializer):
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    zoom = serializers.FloatField()
+
+
 class EventCreateSerializer(serializers.ModelSerializer):
     ticket_types = TicketTypeSerializer(many=True)
     organization = serializers.SlugRelatedField(slug_field="public_id", queryset=Organization.objects.all())
     category = serializers.SlugRelatedField(slug_field="public_id", queryset=EventCategory.objects.all())
+    geo_location = GeoLocationSerializer(required=False, allow_null=True)
 
     def create(self, validated_data):
         ticket_types_data = validated_data.pop("ticket_types")
@@ -56,6 +64,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "location",
+            "geo_location",
             "ticket_types",
         ]
         read_only_fields = ["public_id"]

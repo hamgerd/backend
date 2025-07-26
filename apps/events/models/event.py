@@ -4,6 +4,8 @@ from django.utils import timezone
 from apps.core.models import BaseModel
 from apps.organizations.models import Organization
 
+from ..validators import geo_location_validator
+
 
 class EventCategory(BaseModel):
     title = models.CharField(max_length=255)
@@ -28,13 +30,13 @@ class Event(BaseModel):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     location = models.CharField(max_length=255, null=True)
+    geo_location = models.JSONField(null=True, blank=True, validators=[geo_location_validator])
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # TODO: AA event state = {Canceled, Scheduled, Paused, Draft, Completed}
     # TODO: AB external_url for redirecting to user landing page
     # TODO: AC registration_deadline, registration_opening
-    # TODO: AD add geo_location field
     # TODO: AE add faq field to get and return json
 
     class Meta:
@@ -65,4 +67,8 @@ class Event(BaseModel):
         return sum([item.max_participants for item in self.ticket_types.all()])
 
     def is_open_to_register(self):
-        """ TODO: Based on AA, AC calculate the event is between registration_opening and registration_deadline and state = Scheduled """
+        """TODO: Based on AA, AC calculate the event is between registration_opening and registration_deadline and state = Scheduled"""
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
