@@ -25,4 +25,5 @@ dependencies = [
     "drf-nested-routers>=0.94.2",
     "drf-spectacular>=0.28.0",
     "django-filter>=25.1",
+    "gunicorn>=23.0.0",
 ]
