@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from .choices import CurrencyChoice, BillStatusChoice
 from .models import TicketTransaction
-from .serializer import TicketTransactionSerializer
+from .serializer import TicketTransactionSerializer, TicketTransactionSerializerPublic
 from .service import TransactionRequest, send_payment_request, verify_payment_request
 
 MERCHANT_ID = config("MERCHANT_ID")
@@ -81,3 +81,14 @@ class VerifyPaymentView(APIView):
 
         ref_id = ticket_transaction.transaction_id
         return Response({"message": "Payment verified", "ref_id": ref_id})
+
+class UsersTransactionsView(APIView):
+    serializer_class=TicketTransactionSerializerPublic
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        transactions = TicketTransaction.objects.filter(
+            tickets__user=request.user,
+        ).distinct()
+        serializer = self.serializer_class(transactions, many=True)
+        return Response(serializer.data)
