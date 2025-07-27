@@ -7,7 +7,8 @@ from django.utils import timezone
 from apps.core.models import BaseModel
 
 from ..events.choices import TicketStatusChoice
-from .choices import BillStatusChoice, CommissionActionTypeChoice
+from ..organizations.models import Organization
+from .choices import AccountingServiceTypeChoice, BillStatusChoice, CommissionActionTypeChoice
 from .managers import CommissionRulesManager
 
 
@@ -49,3 +50,10 @@ class CommissionRules(BaseModel):
     amount = models.DecimalField(max_digits=12, decimal_places=0)
 
     objects = CommissionRulesManager()
+
+
+class OrganizationAccounting(BaseModel):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="accounts")
+    service = models.CharField(max_length=20, choices=AccountingServiceTypeChoice.EVENT_PAYMENT)
+    amount = models.DecimalField(max_digits=12, decimal_places=0)
+    extra_arguements = models.JSONField(blank=True, default={})

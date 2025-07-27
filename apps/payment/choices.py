@@ -15,3 +15,7 @@ class CurrencyChoice(TextChoices):
 class CommissionActionTypeChoice(TextChoices):
     PERCENTAGE = "p", "percentage"
     CONSTANT = "c", "constant"
+
+
+class AccountingServiceTypeChoice(TextChoices):
+    EVENT_PAYMENT = "eventpayment", "event payment"
