@@ -32,7 +32,7 @@ def send_payment_request(tx: TransactionRequest) -> dict[str, Any]:
         with httpx.Client(timeout=20) as client:
             response = client.post(ZP_API_REQUEST, json=payload)
         if response.status_code != 200:
-            return {"status": False, "code": f"HTTP {response.status_code}", "response":response.content}
+            return {"status": False, "code": f"HTTP {response.status_code}", "response": response.content}
 
         data = response.json().get("data", {})
         if data.get("code") == 100:
@@ -61,7 +61,7 @@ def verify_payment_request(authority: str, amount: int, merchant_id) -> dict[str
         with httpx.Client(timeout=10) as client:
             response = client.post(ZP_API_VERIFY, json=payload)
         if response.status_code != 200:
-            return {"status": False, "code": f"HTTP {response.status_code}", "response":response.content}
+            return {"status": False, "code": f"HTTP {response.status_code}", "response": response.content}
 
         data = response.json().get("data", {})
         if data.get("code") == 100:

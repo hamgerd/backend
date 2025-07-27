@@ -5,40 +5,45 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('events', '0009_alter_event_public_id_alter_eventcategory_public_id_and_more'),
-        ('payment', '0004_remove_tickettransaction_currency_and_more'),
+        ("events", "0009_alter_event_public_id_alter_eventcategory_public_id_and_more"),
+        ("payment", "0004_remove_tickettransaction_currency_and_more"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='ticket',
+            name="ticket",
             unique_together=set(),
         ),
         migrations.RemoveField(
-            model_name='tickettype',
-            name='currency',
+            model_name="tickettype",
+            name="currency",
         ),
         migrations.AddField(
-            model_name='ticket',
-            name='final_amount',
+            model_name="ticket",
+            name="final_amount",
             field=models.PositiveIntegerField(default=0),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='ticket',
-            name='transaction',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='tickets', to='payment.tickettransaction'),
+            model_name="ticket",
+            name="transaction",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="tickets",
+                to="payment.tickettransaction",
+            ),
         ),
         migrations.AlterField(
-            model_name='ticket',
-            name='ticket_number',
+            model_name="ticket",
+            name="ticket_number",
             field=models.PositiveSmallIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='tickettype',
-            name='price',
+            model_name="tickettype",
+            name="price",
             field=models.PositiveIntegerField(),
         ),
     ]

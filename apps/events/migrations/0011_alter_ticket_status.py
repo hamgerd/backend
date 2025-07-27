@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('events', '0010_alter_ticket_unique_together_and_more'),
+        ("events", "0010_alter_ticket_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ticket',
-            name='status',
-            field=models.CharField(choices=[('p', 'pending'), ('s', 'success'), ('c', 'cancelled'), ('e', 'expired')], default='p', max_length=20),
+            model_name="ticket",
+            name="status",
+            field=models.CharField(
+                choices=[("p", "pending"), ("s", "success"), ("c", "cancelled"), ("e", "expired")],
+                default="p",
+                max_length=20,
+            ),
         ),
     ]

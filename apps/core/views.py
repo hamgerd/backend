@@ -6,9 +6,10 @@ from rest_framework import status
 # Create your views here.
 class HealthCheckAPI(APIView):
     """
-    A Health check API to 
+    A Health check API to
     monitor service availability
     """
+
     def get(self, request):
-        """ Only listen on GET method """
+        """Only listen on GET method"""
         return Response({"status": "success"}, status=status.HTTP_200_OK)

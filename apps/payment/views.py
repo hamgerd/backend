@@ -12,7 +12,7 @@ from .serializer import TicketTransactionSerializer, TicketTransactionSerializer
 from .service import TransactionRequest, send_payment_request, verify_payment_request
 
 MERCHANT_ID = config("MERCHANT_ID")
-BASE_AMOUNT = 1000 # if amount is lesser than base amount it will automatically confirm the transaction
+BASE_AMOUNT = 1000  # if amount is lesser than base amount it will automatically confirm the transaction
 DEFAULT_CURRENCY = CurrencyChoice.IRT
 
 
@@ -22,9 +22,7 @@ class PayTransactionView(GenericAPIView):
 
     def post(self, request, transaction):
         ticket_transaction = TicketTransaction.objects.filter(
-            public_id=transaction,
-            tickets__user=request.user,
-            status=BillStatusChoice.PENDING.value
+            public_id=transaction, tickets__user=request.user, status=BillStatusChoice.PENDING.value
         ).distinct()
 
         ticket_transaction = get_object_or_404(ticket_transaction)
@@ -47,7 +45,7 @@ class PayTransactionView(GenericAPIView):
             if response["status"]:
                 ticket_transaction.authority = response["authority"]
                 ticket_transaction.save()
-                return Response(response,status=200)
+                return Response(response, status=200)
             else:
                 return Response(response, status=400)
 
@@ -77,13 +75,15 @@ class VerifyPaymentView(APIView):
                     ticket_transaction.cancel()
                     return Response(response, status=400)
 
-            case BillStatusChoice.SUCCESS: ...
+            case BillStatusChoice.SUCCESS:
+                ...
 
         ref_id = ticket_transaction.transaction_id
         return Response({"message": "Payment verified", "ref_id": ref_id})
 
+
 class UsersTransactionsView(APIView):
-    serializer_class=TicketTransactionSerializerPublic
+    serializer_class = TicketTransactionSerializerPublic
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):

@@ -5,15 +5,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('events', '0011_alter_ticket_status'),
+        ("events", "0011_alter_ticket_status"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='event',
-            name='geo_location',
+            model_name="event",
+            name="geo_location",
             field=models.JSONField(blank=True, null=True, validators=[apps.events.validators.geo_location_validator]),
         ),
     ]
