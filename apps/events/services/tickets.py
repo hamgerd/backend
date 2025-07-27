@@ -23,7 +23,7 @@ class TicketCreationService:
 
         tickets = self._create_ticket_objects(user, ticket_types, event)
         response_tickets_data = self._get_response_tickets_data(tickets)
-        transaction = self._create_transaction(tickets)
+        transaction = self._create_transaction(tickets, event)
 
         data = {"transaction_public_id": transaction.public_id, "ticket_data": response_tickets_data}
         serializer = TicketCreateResponseSerializer(data=data)
@@ -35,9 +35,14 @@ class TicketCreationService:
         for ticket_type in ticket_types:
             if ticket_type["count"] > 0:
                 ticket_type_obj = TicketType.objects.get(public_id=ticket_type["ticket_type_public_id"])
-                ticket_price = self._add_buyer_commission(ticket_type_obj.price, event)
+                commission = self._get_commission(ticket_type_obj.price)
                 for _ in range(ticket_type["count"]):
-                    ticket = Ticket(user=user, ticket_type=ticket_type_obj, final_amount=ticket_price)
+                    ticket = Ticket(
+                        user=user,
+                        ticket_type=ticket_type_obj,
+                        final_amount=ticket_type_obj.price,
+                        commission=commission,
+                    )
                     tickets.append(ticket)
         return tickets
 
@@ -79,8 +84,14 @@ class TicketCreationService:
         ]
 
     @staticmethod
-    def _create_transaction(tickets: list[Ticket]):
-        total_amount = sum(ticket.final_amount for ticket in tickets)
+    def _create_transaction(tickets: list[Ticket], event: Event):
+        if event.commission_payer == CommissionPayerChoice.SELLER:
+            total_amount = sum(ticket.final_amount for ticket in tickets)
+        elif event.commission_payer == CommissionPayerChoice.BUYER:
+            total_amount = sum(ticket.final_amount + ticket.commission for ticket in tickets)
+        else:
+            raise ValueError("Unhandled Commission Payer")
+
         tx = TicketTransaction.objects.create(amount=total_amount)
         for ticket in tickets:
             ticket.transaction = tx
@@ -88,20 +99,15 @@ class TicketCreationService:
         return tx
 
     @staticmethod
-    def _add_buyer_commission(ticket_type_price: Decimal, event: Event):
-        if event.commission_payer != CommissionPayerChoice.BUYER:
-            return ticket_type_price
-
+    def _get_commission(ticket_type_price: Decimal):
         commission_rule = CommissionRules.objects.get_commission_rule(ticket_type_price)
         if commission_rule:
             if commission_rule.action == CommissionActionTypeChoice.PERCENTAGE:
-                commission = commission_rule.amount * ticket_type_price
+                commission = commission_rule.amount * ticket_type_price / 100
             elif commission_rule.action == CommissionActionTypeChoice.CONSTANT:
                 commission = commission_rule.amount
             else:
                 raise ValueError("Unhandled commission type")
-            final_price = ticket_type_price
-            final_price += commission
-            return final_price
+            return commission
 
-        return ticket_type_price
+        return 0
