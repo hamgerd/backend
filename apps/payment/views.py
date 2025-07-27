@@ -7,8 +7,9 @@ from rest_framework.views import APIView
 
 from .choices import BillStatusChoice, CurrencyChoice
 from .models import TicketTransaction
-from .serializer import TicketTransactionSerializer, TicketTransactionSerializerPublic
+from .serializer import TicketTransactionSerializer, TicketTransactionSerializerPublic, TransactionResultSerializer
 from .service import TransactionRequest, send_payment_request, verify_payment_request
+from .utils import build_transaction_result
 
 MERCHANT_ID = config("MERCHANT_ID")
 BASE_AMOUNT = 1000  # if amount is lesser than base amount it will automatically confirm the transaction
@@ -30,7 +31,8 @@ class PayTransactionView(GenericAPIView):
             ticket_transaction.confirm(ticket_transaction.public_id)
             ticket_transaction.authority = ticket_transaction.public_id
             ticket_transaction.save()
-            return Response({"message": "Payment verified", "authority": ticket_transaction.public_id})
+            trs = build_transaction_result(ticket_transaction)
+            return Response(trs)
         else:
             ta_req = TransactionRequest(
                 merchant_id=MERCHANT_ID,
@@ -63,7 +65,8 @@ class VerifyPaymentView(APIView):
 
         match BillStatusChoice(ticket_transaction.status):
             case BillStatusChoice.CANCELLED:
-                return Response({"message": "transaction canceled"}, status=400)
+                trs = build_transaction_result(ticket_transaction)
+                return Response(trs, status=400)
             case BillStatusChoice.PENDING:
                 response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
                 if response["status"]:
@@ -71,20 +74,21 @@ class VerifyPaymentView(APIView):
                     ticket_transaction.confirm(ref_id)
                 else:
                     ticket_transaction.cancel()
-                    return Response(response, status=400)
+                    trs = build_transaction_result(ticket_transaction)
+                    return Response(trs, status=400)
 
             case BillStatusChoice.SUCCESS:
                 ...
 
-        ref_id = ticket_transaction.transaction_id
-        return Response({"message": "Payment verified", "ref_id": ref_id})
+        trs = build_transaction_result(ticket_transaction)
+        return Response(trs)
 
 
-class UsersTransactionsView(APIView):
+class UsersTransactionsView(GenericAPIView):
     serializer_class = TicketTransactionSerializerPublic
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
+    def retrieve(self, request):
         transactions = TicketTransaction.objects.filter(
             tickets__user=request.user,
         ).distinct()
