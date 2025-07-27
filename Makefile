@@ -58,3 +58,6 @@ lint:
 
 # Run linting and tests with coverage
 test-all: lint test-coverage
+
+denvmaker: # development env file maker
+	cat env/development/* >> .env
