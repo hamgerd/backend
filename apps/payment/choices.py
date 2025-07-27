@@ -10,3 +10,8 @@ class BillStatusChoice(TextChoices):
 class CurrencyChoice(TextChoices):
     IRR = "IRR", "IRR"
     IRT = "IRT", "IRT"
+
+
+class CommissionActionTypeChoice(TextChoices):
+    PERCENTAGE = "p", "percentage"
+    CONSTANT = "c", "constant"

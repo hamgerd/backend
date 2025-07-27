@@ -6,3 +6,8 @@ class TicketStatusChoice(TextChoices):
     SUCCESS = "s", "success"
     CANCELLED = "c", "cancelled"
     EXPIRED = "e", "expired"
+
+
+class CommissionPayerChoice(TextChoices):
+    BUYER = "b", "buyer"
+    SELLER = "s", "seller"

@@ -7,11 +7,12 @@ from django.utils import timezone
 from apps.core.models import BaseModel
 
 from ..events.choices import TicketStatusChoice
-from .choices import BillStatusChoice
+from .choices import BillStatusChoice, CommissionActionTypeChoice
+from .managers import CommissionRulesManager
 
 
 class TicketTransaction(BaseModel):
-    amount = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    amount = models.DecimalField(max_digits=12, decimal_places=0, validators=[MinValueValidator(0)])
     authority = models.CharField(null=True, max_length=128)
     status = models.CharField(max_length=20, choices=BillStatusChoice.choices, default=BillStatusChoice.PENDING.value)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -26,7 +27,7 @@ class TicketTransaction(BaseModel):
         return self.created_at + timedelta(minutes=15)
 
     def save(self, *args, **kwargs):
-        self.clean()
+        self.full_clean()
         super().save(*args, **kwargs)
 
     def cancel(self):
@@ -39,3 +40,12 @@ class TicketTransaction(BaseModel):
         self.status = BillStatusChoice.SUCCESS
         self.tickets.update(status=TicketStatusChoice.SUCCESS)
         self.save()
+
+
+class CommissionRules(BaseModel):
+    start = models.DecimalField(max_digits=12, decimal_places=0)
+    end = models.DecimalField(max_digits=12, decimal_places=0)
+    action = models.CharField(max_length=3, choices=CommissionActionTypeChoice.choices)
+    amount = models.DecimalField(max_digits=12, decimal_places=0)
+
+    objects = CommissionRulesManager()

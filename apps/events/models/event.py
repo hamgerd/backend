@@ -4,6 +4,7 @@ from django.utils import timezone
 from apps.core.models import BaseModel
 from apps.organizations.models import Organization
 
+from ..choices import CommissionPayerChoice
 from ..validators import geo_location_validator
 
 
@@ -32,6 +33,9 @@ class Event(BaseModel):
     location = models.CharField(max_length=255, null=True)
     geo_location = models.JSONField(null=True, blank=True, validators=[geo_location_validator])
     is_active = models.BooleanField(default=True)
+    commission_payer = models.CharField(
+        max_length=3, choices=CommissionPayerChoice.choices, default=CommissionPayerChoice.SELLER
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # TODO: AA event state = {Canceled, Scheduled, Paused, Draft, Completed}

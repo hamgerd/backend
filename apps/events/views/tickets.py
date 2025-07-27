@@ -53,7 +53,7 @@ class TicketViewSet(
         serializer = self.get_serializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         event = get_object_or_404(Event, public_id=event_public_id)
-        response_serializer = TicketCreationService.handle_ticket_creation(
+        response_serializer = TicketCreationService().handle_ticket_creation(
             event, request.user, serializer.validated_data
         )
         return Response(response_serializer.data, status.HTTP_201_CREATED)

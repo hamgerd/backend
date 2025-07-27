@@ -16,8 +16,7 @@ class TicketType(BaseModel):
     description = models.TextField(blank=True)
     max_participants = models.PositiveIntegerField(validators=[validators.MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
-    price = models.PositiveIntegerField()
-    # currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
+    price = models.DecimalField(max_digits=12, decimal_places=0)
 
     @property
     def remaining_tickets(self):
@@ -34,7 +33,7 @@ class Ticket(BaseModel):
         max_length=20, choices=TicketStatusChoice.choices, default=TicketStatusChoice.PENDING.value
     )
     ticket_number = models.PositiveSmallIntegerField(editable=False)
-    final_amount = models.PositiveIntegerField()
+    final_amount = models.DecimalField(max_digits=12, decimal_places=0)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

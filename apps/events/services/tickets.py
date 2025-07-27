@@ -1,32 +1,45 @@
 from collections import defaultdict
+from decimal import Decimal
 
 from django.conf import settings
 from django.db.transaction import atomic
 from rest_framework.exceptions import ValidationError
 
-from apps.payment.models import TicketTransaction
+from apps.payment.models import CommissionRules, TicketTransaction
 
+from ...payment.choices import CommissionActionTypeChoice
+from ..choices import CommissionPayerChoice
 from ..models import Event, Ticket, TicketType
 from ..serializers.ticket import TicketCreateResponseSerializer
 
 
 class TicketCreationService:
-    @classmethod
     @atomic
     def handle_ticket_creation(
-        cls, event: Event, user: settings.AUTH_USER_MODEL, ticket_types: list
+        self, event: Event, user: settings.AUTH_USER_MODEL, ticket_types: list
     ) -> TicketCreateResponseSerializer:
-        cls._is_ticket_types_valid(event, ticket_types)
-        cls._is_enough_tickets_available(event, ticket_types)
+        self._is_ticket_types_valid(event, ticket_types)
+        self._is_enough_tickets_available(event, ticket_types)
 
-        tickets = cls._create_ticket_objects(user, ticket_types)
-        response_tickets_data = cls._get_response_tickets_data(tickets)
-        transaction = cls._create_transaction(tickets)
+        tickets = self._create_ticket_objects(user, ticket_types, event)
+        response_tickets_data = self._get_response_tickets_data(tickets)
+        transaction = self._create_transaction(tickets)
 
         data = {"transaction_public_id": transaction.public_id, "ticket_data": response_tickets_data}
         serializer = TicketCreateResponseSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return serializer
+
+    def _create_ticket_objects(self, user: settings.AUTH_USER_MODEL, ticket_types: list, event: Event):
+        tickets = []
+        for ticket_type in ticket_types:
+            if ticket_type["count"] > 0:
+                ticket_type_obj = TicketType.objects.get(public_id=ticket_type["ticket_type_public_id"])
+                ticket_price = self._add_buyer_commission(ticket_type_obj.price, event)
+                for _ in range(ticket_type["count"]):
+                    ticket = Ticket(user=user, ticket_type=ticket_type_obj, final_amount=ticket_price)
+                    tickets.append(ticket)
+        return tickets
 
     @staticmethod
     def _is_ticket_types_valid(event: Event, ticket_types: list):
@@ -55,17 +68,6 @@ class TicketCreationService:
                     )
 
     @staticmethod
-    def _create_ticket_objects(user: settings.AUTH_USER_MODEL, ticket_types: list):
-        tickets = []
-        for ticket_type in ticket_types:
-            if ticket_type["count"] > 0:
-                ticket_type_obj = TicketType.objects.get(public_id=ticket_type["ticket_type_public_id"])
-                for _ in range(ticket_type["count"]):
-                    ticket = Ticket(user=user, ticket_type=ticket_type_obj, final_amount=ticket_type_obj.price)
-                    tickets.append(ticket)
-        return tickets
-
-    @staticmethod
     def _get_response_tickets_data(tickets: list[Ticket]) -> list:
         """Get the list of ticket_types with ticket public_id list asossiated with them"""
         tickets_by_type = defaultdict(list)
@@ -84,3 +86,22 @@ class TicketCreationService:
             ticket.transaction = tx
             ticket.save()
         return tx
+
+    @staticmethod
+    def _add_buyer_commission(ticket_type_price: Decimal, event: Event):
+        if event.commission_payer != CommissionPayerChoice.BUYER:
+            return ticket_type_price
+
+        commission_rule = CommissionRules.objects.get_commission_rule(ticket_type_price)
+        if commission_rule:
+            if commission_rule.action == CommissionActionTypeChoice.PERCENTAGE:
+                commission = commission_rule.amount * ticket_type_price
+            elif commission_rule.action == CommissionActionTypeChoice.CONSTANT:
+                commission = commission_rule.amount
+            else:
+                raise ValueError("Unhandled commission type")
+            final_price = ticket_type_price
+            final_price += commission
+            return final_price
+
+        return ticket_type_price
