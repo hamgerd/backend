@@ -193,6 +193,3 @@ SPECTACULAR_SETTINGS = {
         "BillStatusChoice": "apps.payment.choices.BillStatusChoice",
     },
 }
-
-
-DEBUG = 0
