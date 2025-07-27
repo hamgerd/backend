@@ -1,12 +1,12 @@
 from decouple import config
 from django.conf import settings
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .choices import CurrencyChoice, BillStatusChoice
+from .choices import BillStatusChoice, CurrencyChoice
 from .models import TicketTransaction
 from .serializer import TicketTransactionSerializer, TicketTransactionSerializerPublic
 from .service import TransactionRequest, send_payment_request, verify_payment_request
