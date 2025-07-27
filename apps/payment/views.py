@@ -60,7 +60,6 @@ class VerifyPaymentView(APIView):
         ).distinct()
 
         ticket_transaction = get_object_or_404(ticket_transaction)
-        ref_id = ticket_transaction.transaction_id
 
         match BillStatusChoice(ticket_transaction.status):
             case BillStatusChoice.CANCELLED:
