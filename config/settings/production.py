@@ -20,8 +20,8 @@ SENTRY_DSN = config("SENTRY_DSN", default=None)
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        send_default_pii=True,
-        traces_sample_rate=1.0,
-        profile_session_sample_rate=1.0,
+        send_default_pii=False,
+        traces_sample_rate=0.05,
+        profile_session_sample_rate=0,
         profile_lifecycle="trace",
     )
