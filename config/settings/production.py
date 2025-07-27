@@ -1,4 +1,8 @@
-from .base import *
+import sentry_sdk
+from decouple import config
+
+from .base import *  # noqa: F403
+from .base import ALLOWED_HOSTS, REST_FRAMEWORK
 
 ALLOWED_HOSTS += ["hamgerd.ir"]
 
@@ -11,3 +15,13 @@ REST_FRAMEWORK_PRODUCTION = {
 }
 
 REST_FRAMEWORK.update(REST_FRAMEWORK_PRODUCTION)
+
+SENTRY_DSN = config("SENTRY_DSN", default=None)
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=True,
+        traces_sample_rate=1.0,
+        profile_session_sample_rate=1.0,
+        profile_lifecycle="trace",
+    )

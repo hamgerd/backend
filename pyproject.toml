@@ -26,4 +26,5 @@ dependencies = [
     "drf-spectacular>=0.28.0",
     "django-filter>=25.1",
     "gunicorn>=23.0.0",
+    "sentry-sdk[django]>=2.33.2",
 ]
