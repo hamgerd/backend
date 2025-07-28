@@ -1,6 +1,7 @@
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotAcceptable, PermissionDenied
 from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -67,3 +68,42 @@ class UserTicketsView(GenericAPIView):
         user_tickets = Ticket.objects.select_related("user").filter(user=request.user)
         serializer = self.get_serializer(user_tickets, many=True)
         return Response(serializer.data)
+
+
+class UserPresenceView(
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+    lookup_field = "public_id"
+
+    def retrieve(self, request, pk):
+        ticket = get_object_or_404(Ticket, public_id=pk)
+        if request.user in [
+            ticket.user,
+            ticket.ticket_type.event.organization.owner
+        ]:
+            return Response({"presence":ticket.presence})
+        else:
+            raise PermissionDenied("You do not have permission.")
+
+    def create(self, request, pk):
+        ticket = get_object_or_404(Ticket, public_id=pk)
+        presence_key = request.data.get("presence_key")
+
+        if request.user == ticket.ticket_type.event.organization.owner:
+            if ticket.user_attended(presence_key):
+                return Response({"message":"user presence registered"})
+            else:
+                raise NotAcceptable("wrong presence_key")
+        else:
+            raise PermissionDenied("You do not have permission.")
+
+    @action(methods=["post"], detail=True)
+    def key(self, request, pk):
+        ticket = get_object_or_404(Ticket, public_id=pk)
+        if request.user == ticket.user:
+            return Response({"presence":ticket.presence_key})
+        else:
+            raise PermissionDenied("You do not have permission.")
