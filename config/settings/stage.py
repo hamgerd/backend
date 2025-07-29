@@ -7,6 +7,7 @@ AWS_S3_PROXIES = {"http": "minio:9000"}
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = ["https://stage.hamgerd.ir", "https://api-stage.hamgerd.ir"]
 
 REST_FRAMEWORK_BASE = {
     "DEFAULT_THROTTLE_CLASSES": [
