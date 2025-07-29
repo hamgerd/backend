@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.core import validators
 from django.db import models
@@ -41,6 +43,8 @@ class Ticket(BaseModel):
     transaction = models.ForeignKey(
         TicketTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name="tickets"
     )
+    presence = models.BooleanField(default=False)
+    presence_key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -79,6 +83,13 @@ class Ticket(BaseModel):
         """Cancel the ticket"""
         if self.status in [TicketStatusChoice.PENDING.value, TicketStatusChoice.SUCCESS.value]:
             self.status = TicketStatusChoice.CANCELLED.value
+            self.save()
+            return True
+        return False
+
+    def user_attended(self, presence_key):
+        if presence_key == self.presence_key:
+            self.presence = True
             self.save()
             return True
         return False

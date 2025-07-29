@@ -22,6 +22,6 @@ def build_transaction_result(ticket_transaction):
         case _:
             raise ValidationError("Invalid transaction status.")
 
-    serializer = TransactionResultSerializer(data)
+    serializer = TransactionResultSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     return serializer.data
