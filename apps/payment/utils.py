@@ -18,7 +18,7 @@ def build_transaction_result(ticket_transaction):
             data["message"] = "transaction canceled"
         case BillStatusChoice.SUCCESS:
             data["message"] = "transaction successful"
-            data["ref_id"] = ticket_transaction.ref_id  # Or whatever your field is called
+            data["ref_id"] = ticket_transaction.transaction_id  # Or whatever your field is called
         case _:
             raise ValidationError("Invalid transaction status.")
 
