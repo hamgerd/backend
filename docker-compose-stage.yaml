@@ -1,6 +1,6 @@
 services:
   backend:
-    image: mirsobhan/neshast-backend:latest
+    image: ghcr.io/hamgerd/backend:main
     command: sh -c "make collectstatic && uv run gunicorn config.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - logs:/app/logs
@@ -42,7 +42,7 @@ services:
       - internal_net
 
   worker:
-    image: mirsobhan/neshast-backend:latest
+    image: ghcr.io/hamgerd/backend:main
     command: uv run celery -A config worker -l INFO
     env_file:
       - env/stage/django.env
@@ -56,7 +56,7 @@ services:
       - internal_net
 
   beat:
-    image: mirsobhan/neshast-backend:latest
+    image: ghcr.io/hamgerd/backend:main
     command: uv run celery -A config beat -l INFO
     env_file:
       - env/stage/django.env
