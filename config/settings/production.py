@@ -18,6 +18,7 @@ REST_FRAMEWORK_PRODUCTION = {
 REST_FRAMEWORK.update(REST_FRAMEWORK_PRODUCTION)
 
 SENTRY_DSN = config("SENTRY_DSN", default=None)
+
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
@@ -26,3 +27,8 @@ if SENTRY_DSN:
         profile_session_sample_rate=0,
         profile_lifecycle="trace",
     )
+
+ATOMIC_REQUESTS=True
+
+AWS_S3_USE_SSL = True
+AWS_S3_ADDRESSING_STYLE = "path"
