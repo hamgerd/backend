@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "dj-database-url>=2.3.0",
-    "django>=5.1.7",
+    "django[argon2]>=5.1.7",
     "djangorestframework-simplejwt>=5.5.0",
     "djangorestframework>=3.15.2",
     "python-decouple>=3.8",
