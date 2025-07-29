@@ -4,7 +4,7 @@ from decouple import config
 from .base import *  # noqa: F403
 from .base import ALLOWED_HOSTS, REST_FRAMEWORK
 
-ALLOWED_HOSTS += ["hamgerd.ir"]
+ALLOWED_HOSTS += ["hamgerd.ir", "api.hamgerd.ir"]
 
 REST_FRAMEWORK_PRODUCTION = {
     "DEFAULT_THROTTLE_CLASSES": [
