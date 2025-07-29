@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from .choices import BillStatusChoice, CurrencyChoice
 from .models import TicketTransaction
-from .serializer import TicketTransactionSerializer, TicketTransactionSerializerPublic, TransactionResultSerializer
+from .serializer import TicketTransactionSerializer, TicketTransactionSerializerPublic
 from .service import TransactionRequest, send_payment_request, verify_payment_request
 from .utils import build_transaction_result
 

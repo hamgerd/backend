@@ -30,8 +30,9 @@ class TicketTransactionSerializerPublic(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
 class TransactionResultSerializer(serializers.Serializer):
     transaction_id = serializers.CharField()
     status = serializers.CharField()
-    ref_id = serializers.CharField(allow_null=True,required=False)
+    ref_id = serializers.CharField(allow_null=True, required=False)
     message = serializers.CharField(required=False, allow_blank=True)

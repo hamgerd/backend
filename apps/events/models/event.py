@@ -3,8 +3,8 @@ from django.utils import timezone
 
 from apps.core.models import BaseModel
 from apps.organizations.models import Organization
-from ..choices import EventStatusChoice
 
+from ..choices import EventStatusChoice
 from ..validators import geo_location_validator
 
 
@@ -35,9 +35,7 @@ class Event(BaseModel):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(
-        max_length=20, choices=EventStatusChoice.choices, default=EventStatusChoice.DRAFT.value
-    )
+    status = models.CharField(max_length=20, choices=EventStatusChoice.choices, default=EventStatusChoice.DRAFT.value)
     # TODO: AA event state = {Canceled, Scheduled, Paused, Draft, Completed}
     # TODO: AB external_url for redirecting to user landing page
     # TODO: AC registration_deadline, registration_opening
