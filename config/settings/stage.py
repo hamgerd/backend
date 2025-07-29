@@ -3,7 +3,7 @@ from .base import *  # noqa: F403
 DEBUG = True
 
 ALLOWED_HOSTS += ["0.0.0.0", "127.0.0.1", "localhost", "stage.hamgerd.ir", "api-stage.hamgerd.ir"]
-AWS_S3_PROXIES = {"https": "api-stage.hamgerd.ir:9000"}
+AWS_S3_PROXIES = {"http": "minio:9000"}
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
