@@ -54,6 +54,6 @@ class CommissionRules(BaseModel):
 
 class OrganizationAccounting(BaseModel):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="accounts")
-    service = models.CharField(max_length=20, choices=AccountingServiceTypeChoice.EVENT_PAYMENT)
+    service = models.CharField(max_length=20, choices=AccountingServiceTypeChoice.choices)
     amount = models.DecimalField(max_digits=12, decimal_places=0)
-    extra_arguements = models.JSONField(blank=True, default={})
+    extra_arguments = models.JSONField(blank=True, default={})

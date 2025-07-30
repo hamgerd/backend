@@ -1,5 +1,7 @@
 from django.contrib import admin
 
-from .models import TicketTransaction
+from . import models
 
-admin.site.register(TicketTransaction)
+admin.site.register(models.TicketTransaction)
+admin.site.register(models.OrganizationAccounting)
+admin.site.register(models.CommissionRules)
