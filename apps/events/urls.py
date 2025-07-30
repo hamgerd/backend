@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework_nested import routers
 
 from . import views
@@ -18,4 +19,5 @@ urlpatterns = [
     *router.urls,
     *events_router.urls,
     *tickets_router.urls,
+    path("tickets/me/", views.UserTicketsView.as_view(), name="user-tickets"),
 ]
