@@ -1,0 +1,32 @@
+default_stages:
+  - pre-commit
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format .
+        language: system
+        types: [ python ]
+        pass_filenames: false
+      - id: ruff-check
+        name: ruff check
+        entry: poetry run ruff check . --fix --fix-only 
+        language: system
+        types: [ python ]
+        pass_filenames: false
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-byte-order-marker
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-toml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: requirements-txt-fixer
+
