@@ -36,9 +36,9 @@ class Event(BaseModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=EventStatusChoice.choices, default=EventStatusChoice.DRAFT.value)
-    # TODO: AA event state = {Canceled, Scheduled, Paused, Draft, Completed}
+    registration_opening = models.DateTimeField(null=True)
+    registration_deadline = models.DateTimeField(null=True)
     # TODO: AB external_url for redirecting to user landing page
-    # TODO: AC registration_deadline, registration_opening
     # TODO: AE add faq field to get and return json
 
     class Meta:
@@ -69,7 +69,22 @@ class Event(BaseModel):
         return sum([item.max_participants for item in self.ticket_types.all()])
 
     def is_open_to_register(self):
-        """TODO: Based on AA, AC calculate the event is between registration_opening and registration_deadline and state = Scheduled"""
+        """
+        Returns True if registration is currently open for the event.
+
+        Registration is considered open if:
+          - The event status is SCHEDULED.
+          - The current datetime falls between the registration opening and deadline windows.
+          - If opening or deadline are not set, fallbacks to event's start and end dates.
+        """
+        if self.status == EventStatusChoice.SCHEDULED:
+            now = timezone.now()
+            opening = self.registration_opening or self.start_date
+            deadline = self.registration_deadline or self.end_date
+            if opening and deadline and opening < now < deadline:
+                return True
+        return False
+
 
     def save(self, *args, **kwargs):
         self.full_clean()

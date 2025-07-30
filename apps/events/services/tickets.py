@@ -16,6 +16,7 @@ class TicketCreationService:
     def handle_ticket_creation(
         cls, event: Event, user: settings.AUTH_USER_MODEL, ticket_types: list
     ) -> TicketCreateResponseSerializer:
+        cls._is_event_open_to_register(event)
         cls._is_ticket_types_valid(event, ticket_types)
         cls._is_enough_tickets_available(event, ticket_types)
 
@@ -27,6 +28,12 @@ class TicketCreationService:
         serializer = TicketCreateResponseSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return serializer
+
+    @staticmethod
+    def _is_event_open_to_register(event: Event):
+        is_open = event.is_open_to_register()
+        if not is_open:
+            raise ValidationError("Event is not open to register")
 
     @staticmethod
     def _is_ticket_types_valid(event: Event, ticket_types: list):
