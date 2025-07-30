@@ -8,7 +8,7 @@ from apps.core.models import BaseModel
 
 from ..events.choices import TicketStatusChoice
 from ..organizations.models import Organization
-from .choices import AccountingServiceTypeChoice, BillStatusChoice, CommissionActionTypeChoice
+from .choices import AccountingServiceTypeChoice, BalanceTypeChoice, BillStatusChoice, CommissionActionTypeChoice
 from .managers import CommissionRulesManager
 
 
@@ -54,6 +54,7 @@ class CommissionRules(BaseModel):
 
 class OrganizationAccounting(BaseModel):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="accounts")
-    service = models.CharField(max_length=20, choices=AccountingServiceTypeChoice.choices)
+    service = models.CharField(max_length=5, choices=AccountingServiceTypeChoice.choices)
+    balance = models.CharField(max_length=5, choices=BalanceTypeChoice.choices)
     amount = models.DecimalField(max_digits=12, decimal_places=0)
     extra_arguments = models.JSONField(blank=True, default={})

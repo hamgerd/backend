@@ -19,3 +19,8 @@ class CommissionActionTypeChoice(TextChoices):
 
 class AccountingServiceTypeChoice(TextChoices):
     EVENT_PAYMENT = "eventpayment", "event payment"
+
+
+class BalanceTypeChoice(TextChoices):
+    DEBIT = "dbt", "Debit"
+    CREDIT = "crd", "Credit"
