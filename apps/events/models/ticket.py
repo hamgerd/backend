@@ -8,6 +8,7 @@ from apps.core.models import BaseModel
 from apps.payment.models import TicketTransaction
 
 from ..choices import TicketStatusChoice
+from ..validators import zero_or_greater_than_1000
 from .event import Event
 
 
@@ -16,7 +17,12 @@ class TicketType(BaseModel):
     description = models.TextField(blank=True)
     max_participants = models.PositiveIntegerField(validators=[validators.MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
-    price = models.DecimalField(max_digits=12, decimal_places=0)
+    price = models.DecimalField(max_digits=12, decimal_places=2, validators=[zero_or_greater_than_1000])
+    # currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     @property
     def remaining_tickets(self):
@@ -41,6 +47,8 @@ class Ticket(BaseModel):
     transaction = models.ForeignKey(
         TicketTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name="tickets"
     )
+    presence = models.BooleanField(default=False)
+    presence_key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -79,6 +87,13 @@ class Ticket(BaseModel):
         """Cancel the ticket"""
         if self.status in [TicketStatusChoice.PENDING.value, TicketStatusChoice.SUCCESS.value]:
             self.status = TicketStatusChoice.CANCELLED.value
+            self.save()
+            return True
+        return False
+
+    def user_attended(self, presence_key):
+        if presence_key == self.presence_key:
+            self.presence = True
             self.save()
             return True
         return False

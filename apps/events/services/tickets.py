@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db.transaction import atomic
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotAcceptable, ValidationError
 
 from apps.payment.models import CommissionRules, TicketTransaction
 
@@ -18,6 +18,7 @@ class TicketCreationService:
     def handle_ticket_creation(
         self, event: Event, user: settings.AUTH_USER_MODEL, ticket_types: list
     ) -> TicketCreateResponseSerializer:
+        self._is_event_open_to_register(event)
         self._is_ticket_types_valid(event, ticket_types)
         self._is_enough_tickets_available(event, ticket_types)
 
@@ -45,6 +46,12 @@ class TicketCreationService:
                     )
                     tickets.append(ticket)
         return tickets
+
+    @staticmethod
+    def _is_event_open_to_register(event: Event):
+        is_open = event.is_open_to_register()
+        if not is_open:
+            raise NotAcceptable("Event is not open to register")
 
     @staticmethod
     def _is_ticket_types_valid(event: Event, ticket_types: list):

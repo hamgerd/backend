@@ -18,10 +18,12 @@ def build_transaction_result(ticket_transaction):
             data["message"] = "transaction canceled"
         case BillStatusChoice.SUCCESS:
             data["message"] = "transaction successful"
-            data["ref_id"] = ticket_transaction.ref_id  # Or whatever your field is called
+            # in free tickets public id has passed into transaction_id
+            # so there serializer can't parse it into CharField for ref_id we need to str(...)
+            data["ref_id"] = str(ticket_transaction.transaction_id)
         case _:
             raise ValidationError("Invalid transaction status.")
 
-    serializer = TransactionResultSerializer(data)
+    serializer = TransactionResultSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     return serializer.data

@@ -1,7 +1,8 @@
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import GenericAPIView, get_object_or_404
+from rest_framework.exceptions import NotAcceptable, PermissionDenied
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -12,7 +13,7 @@ from ..serializers import (
 )
 from ..serializers.ticket import TicketCreateResponseSerializer
 from ..services.tickets import TicketCreationService
-from .common import public_event_id_parameter
+from .common import public_event_id_parameter, public_ticket_id_parameter
 
 
 @extend_schema_view(
@@ -58,12 +59,45 @@ class TicketViewSet(
         )
         return Response(response_serializer.data, status.HTTP_201_CREATED)
 
-
-class UserTicketsView(GenericAPIView):
-    serializer_class = TicketSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
+    @action(methods=["get"], detail=False)
+    def me(self, request):
         user_tickets = Ticket.objects.select_related("user").filter(user=request.user)
         serializer = self.get_serializer(user_tickets, many=True)
         return Response(serializer.data)
+
+
+@extend_schema_view(
+    create=extend_schema(parameters=[public_event_id_parameter, public_ticket_id_parameter]),
+    retrieve=extend_schema(parameters=[public_event_id_parameter, public_ticket_id_parameter]),
+    key=extend_schema(parameters=[public_event_id_parameter, public_ticket_id_parameter]),
+)
+class UserPresenceView(viewsets.GenericViewSet):
+    permission_classes = [IsAuthenticated]
+    lookup_field = "public_id"
+
+    def retrieve(self, request, pk):
+        ticket = get_object_or_404(Ticket, public_id=pk)
+        if request.user in [ticket.user, ticket.ticket_type.event.organization.owner]:
+            return Response({"presence": ticket.presence})
+        else:
+            raise PermissionDenied("You do not have permission.")
+
+    def create(self, request, pk):
+        ticket = get_object_or_404(Ticket, public_id=pk)
+        presence_key = request.data.get("presence_key")
+
+        if request.user == ticket.ticket_type.event.organization.owner:
+            if ticket.user_attended(presence_key):
+                return Response({"message": "user presence registered"})
+            else:
+                raise NotAcceptable("wrong presence_key")
+        else:
+            raise PermissionDenied("You do not have permission.")
+
+    @action(methods=["post"], detail=True)
+    def key(self, request, pk):
+        ticket = get_object_or_404(Ticket, public_id=pk)
+        if request.user == ticket.user:
+            return Response({"presence": ticket.presence_key})
+        else:
+            raise PermissionDenied("You do not have permission.")
