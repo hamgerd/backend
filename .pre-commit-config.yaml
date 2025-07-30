@@ -11,7 +11,7 @@ repos:
         pass_filenames: false
       - id: ruff-check
         name: ruff check
-        entry: poetry run ruff check . --fix --fix-only 
+        entry: uv run ruff check . --fix --fix-only 
         language: system
         types: [ python ]
         pass_filenames: false
