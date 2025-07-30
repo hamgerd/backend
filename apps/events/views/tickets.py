@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotAcceptable, PermissionDenied
-from rest_framework.generics import GenericAPIView, get_object_or_404
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -59,12 +59,8 @@ class TicketViewSet(
         )
         return Response(response_serializer.data, status.HTTP_201_CREATED)
 
-
-class UserTicketsView(GenericAPIView):
-    serializer_class = TicketSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
+    @action(methods=["get"], detail=False)
+    def me(self, request):
         user_tickets = Ticket.objects.select_related("user").filter(user=request.user)
         serializer = self.get_serializer(user_tickets, many=True)
         return Response(serializer.data)
