@@ -26,3 +26,9 @@ def geo_location_validator(value):
         raise ValidationError("Zoom must be a number between 0 and 22.")
 
     return None
+
+
+def zero_or_greater_than_1000(value):
+    if value != 0 and value < 1000:
+        raise ValidationError("Value must be 0 or greater than or equal to 1000")
+    return None
