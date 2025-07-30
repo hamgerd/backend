@@ -28,7 +28,7 @@ if SENTRY_DSN:
         profile_lifecycle="trace",
     )
 
-ATOMIC_REQUESTS=True
+ATOMIC_REQUESTS = True
 
 AWS_S3_USE_SSL = True
 AWS_S3_ADDRESSING_STYLE = "path"

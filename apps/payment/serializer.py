@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .choices import BillStatusChoice
 from .models import TicketTransaction
 
 
@@ -30,8 +31,9 @@ class TicketTransactionSerializerPublic(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
 class TransactionResultSerializer(serializers.Serializer):
-    transaction_id = serializers.CharField()
-    status = serializers.CharField()
-    ref_id = serializers.CharField(allow_null=True,required=False)
+    transaction_id = serializers.UUIDField()
+    status = serializers.ChoiceField(choices=BillStatusChoice)
+    ref_id = serializers.CharField(allow_null=True, required=False)
     message = serializers.CharField(required=False, allow_blank=True)
