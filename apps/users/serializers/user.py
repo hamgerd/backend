@@ -1,12 +1,11 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-USER = get_user_model()
+from ..models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = USER
+        model = User
         fields = ["public_id", "email", "first_name", "last_name", "organizations"]
 
 
@@ -14,7 +13,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     refresh_token = serializers.CharField(read_only=True)
 
     def create(self, validated_data):
-        return USER.objects.create_user(**validated_data, is_active=False)
+        return User.objects.create_user(**validated_data, is_active=False)
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -22,7 +21,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return representation
 
     class Meta:
-        model = USER
+        model = User
         fields = ["email", "password", "refresh_token"]
         extra_kwargs = {"password": {"write_only": True}}
 
