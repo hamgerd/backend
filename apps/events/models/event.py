@@ -33,7 +33,7 @@ class Event(BaseModel):
     image = models.ImageField(upload_to="events/images/", null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    location = models.CharField(max_length=255, null=True)
+    location = models.CharField(blank=True, max_length=255)  # add blank=True
     geo_location = models.JSONField(null=True, blank=True, validators=[geo_location_validator])
     is_active = models.BooleanField(default=True)
     commission_payer = models.CharField(
@@ -42,8 +42,8 @@ class Event(BaseModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=EventStatusChoice.choices, default=EventStatusChoice.DRAFT.value)
-    registration_opening = models.DateTimeField(null=True)
-    registration_deadline = models.DateTimeField(null=True)
+    registration_opening = models.DateTimeField(blank=True, null=True)
+    registration_deadline = models.DateTimeField(blank=True, null=True)
     # TODO: AB external_url for redirecting to user landing page
     # TODO: AE add faq field to get and return json
 
@@ -91,7 +91,7 @@ class Event(BaseModel):
                 return True
         return False
 
-    def end_up(self):
+    def finalize_event(self):
         """
         Finalizes the event by:
           - Setting the event status to "COMPLETED".
