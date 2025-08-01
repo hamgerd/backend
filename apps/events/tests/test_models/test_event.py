@@ -40,14 +40,12 @@ class TestEventModel:
 
         finalize_event(event)
 
-        assert (
-            OrganizationAccounting.objects.filter(
-                balance=BalanceTypeChoice.DEBIT,
-                organization=event.organization,
-                extra_arguments__description="event commission",
-            ).exists()
-            is False
-        )
+        event_commission_exists = OrganizationAccounting.objects.filter(
+            balance=BalanceTypeChoice.DEBIT,
+            organization=event.organization,
+            extra_arguments__description="event commission",
+        ).exists()
+        assert event_commission_exists is False
 
     def test_finalize_event_creates_a_commission_when_commission_is_gathered_on_a_single_ticket(
         self, event, ticket_type, create_ticket, another_user
