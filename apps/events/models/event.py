@@ -1,12 +1,9 @@
 from django.db import models
-from django.db.models import Sum
 from django.utils import timezone
 
 from apps.core.models import BaseModel
 from apps.organizations.models import Organization
 
-from ...payment.choices import AccountingServiceTypeChoice, BalanceTypeChoice
-from ...payment.models import OrganizationAccounting
 from ..choices import CommissionPayerChoice, EventStatusChoice
 from ..validators import geo_location_validator
 
@@ -90,39 +87,6 @@ class Event(BaseModel):
             if opening and deadline and opening < now < deadline:
                 return True
         return False
-
-    def finalize_event(self):
-        """
-        Finalizes the event by:
-          - Setting the event status to "COMPLETED".
-          - Calculating total ticket income and commission.
-          - Creating a credit accounting record for the event's income.
-          - If the seller pays the commission, also creates a debit accounting record for the commission amount.
-        """
-        self.status = EventStatusChoice.COMPLETED.value
-        self.save()
-        ev = self.ticket_types.tickets.objects.aggregate(
-            total_amount=Sum("final_amount"), total_commission=Sum("commission")
-        )
-
-        event_income = ev["total_amount"] or 0
-        event_commission = ev["total_commission"] or 0
-
-        OrganizationAccounting.objects.create(
-            amount=event_income,
-            service=AccountingServiceTypeChoice.EVENT_PAYMENT,
-            organization=self.organization,
-            balance=BalanceTypeChoice.CREDIT,
-            extra_arguments={"description": "event income"},
-        )
-        if self.commission_payer == CommissionPayerChoice.SELLER:
-            OrganizationAccounting.objects.create(
-                amount=event_commission,
-                service=AccountingServiceTypeChoice.EVENT_PAYMENT,
-                organization=self.organization,
-                balance=BalanceTypeChoice.DEBIT,
-                extra_arguments={"description": "event commission"},
-            )
 
     def save(self, *args, **kwargs):
         self.full_clean()

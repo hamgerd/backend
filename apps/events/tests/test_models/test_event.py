@@ -2,6 +2,7 @@ import pytest
 
 from apps.core.exceptions import BadRequestException
 from apps.events.choices import CommissionPayerChoice, EventStatusChoice
+from apps.events.services.event import finalize_event
 from apps.payment.choices import BalanceTypeChoice
 from apps.payment.models import OrganizationAccounting
 
@@ -9,20 +10,20 @@ from apps.payment.models import OrganizationAccounting
 class TestEventModel:
     def test_finalize_event_raises_exception_when_event_is_not_over(self, event):
         with pytest.raises(BadRequestException, match="Event is not over yet."):
-            event.finalize_event()
+            finalize_event(event)
 
     def test_finalize_event_raises_exception_when_event_is_already_completed(self, event):
         event.status = EventStatusChoice.COMPLETED
         event.save()
 
         with pytest.raises(BadRequestException, match="Event is already completed."):
-            event.finalize_event()
+            finalize_event(event)
 
     def test_finalize_event_creates_no_commission_when_commission_payer_is_the_buyer(self, event, ticket_type):
         event.commission_payer = CommissionPayerChoice.BUYER
         event.save()
 
-        event.finalize_event()
+        finalize_event(event)
 
         assert (
             OrganizationAccounting.objects.filter(
@@ -37,7 +38,7 @@ class TestEventModel:
         ticket.commission = 0
         ticket.save()
 
-        event.finalize_event()
+        finalize_event(event)
 
         assert (
             OrganizationAccounting.objects.filter(
@@ -54,7 +55,7 @@ class TestEventModel:
         ticket_commission = 1000
         create_ticket(user=another_user, ticket_type=ticket_type, commission=ticket_commission)
 
-        event.finalize_event()
+        finalize_event(event)
 
         commissions = OrganizationAccounting.objects.filter(
             balance=BalanceTypeChoice.DEBIT,
@@ -72,7 +73,7 @@ class TestEventModel:
         create_ticket(user=another_user, ticket_type=ticket_type, commission=ticket_commission)
         create_ticket(user=another_user, ticket_type=ticket_type, commission=ticket_commission)
 
-        event.finalize_event()
+        finalize_event(event)
 
         commissions = OrganizationAccounting.objects.filter(
             balance=BalanceTypeChoice.DEBIT,
@@ -94,7 +95,7 @@ class TestEventModel:
         create_ticket(user=another_user, ticket_type=second_ticket_type, commission=second_ticket_commission)
         create_ticket(user=another_user, ticket_type=second_ticket_type, commission=second_ticket_commission)
 
-        event.finalize_event()
+        finalize_event(event)
 
         commissions = OrganizationAccounting.objects.filter(
             balance=BalanceTypeChoice.DEBIT,
