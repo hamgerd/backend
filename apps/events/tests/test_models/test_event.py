@@ -142,3 +142,11 @@ class TestEventModel:
                 end_date=end_date,
                 registration_deadline=registration_deadline,
             )
+
+    def test_update_end_date_fails_after_event_status_is_completed(self, event):
+        event.status = EventStatusChoice.COMPLETED
+        event.save()
+
+        with pytest.raises(NotAcceptable, match="Event is already completed."):
+            event.end_date = timezone.now() + timedelta(days=1)
+            event.save()
