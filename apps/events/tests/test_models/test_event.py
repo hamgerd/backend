@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 import pytest
+import time_machine
 from rest_framework.exceptions import NotAcceptable
 
 from apps.events.choices import CommissionPayerChoice, EventStatusChoice
@@ -16,14 +19,18 @@ class TestEventModel:
         event.status = EventStatusChoice.COMPLETED
         event.save()
 
-        with pytest.raises(NotAcceptable, match="Event is already completed."):
-            finalize_event(event)
+        after_event_time = event.end_date + timedelta(hours=1)
+        with time_machine.travel(after_event_time):
+            with pytest.raises(NotAcceptable, match="Event is already completed."):
+                finalize_event(event)
 
     def test_finalize_event_creates_no_commission_when_commission_payer_is_the_buyer(self, event, ticket_type):
         event.commission_payer = CommissionPayerChoice.BUYER
         event.save()
 
-        finalize_event(event)
+        after_event_time = event.end_date + timedelta(hours=1)
+        with time_machine.travel(after_event_time):
+            finalize_event(event)
 
         assert (
             OrganizationAccounting.objects.filter(
@@ -38,7 +45,9 @@ class TestEventModel:
         ticket.commission = 0
         ticket.save()
 
-        finalize_event(event)
+        after_event_time = event.end_date + timedelta(hours=1)
+        with time_machine.travel(after_event_time):
+            finalize_event(event)
 
         event_commission_exists = OrganizationAccounting.objects.filter(
             balance=BalanceTypeChoice.DEBIT,
@@ -53,7 +62,9 @@ class TestEventModel:
         ticket_commission = 1000
         create_ticket(user=another_user, ticket_type=ticket_type, commission=ticket_commission)
 
-        finalize_event(event)
+        after_event_time = event.end_date + timedelta(hours=1)
+        with time_machine.travel(after_event_time):
+            finalize_event(event)
 
         commissions = OrganizationAccounting.objects.filter(
             balance=BalanceTypeChoice.DEBIT,
@@ -71,7 +82,9 @@ class TestEventModel:
         create_ticket(user=another_user, ticket_type=ticket_type, commission=ticket_commission)
         create_ticket(user=another_user, ticket_type=ticket_type, commission=ticket_commission)
 
-        finalize_event(event)
+        after_event_time = event.end_date + timedelta(hours=1)
+        with time_machine.travel(after_event_time):
+            finalize_event(event)
 
         commissions = OrganizationAccounting.objects.filter(
             balance=BalanceTypeChoice.DEBIT,
@@ -93,7 +106,9 @@ class TestEventModel:
         create_ticket(user=another_user, ticket_type=second_ticket_type, commission=second_ticket_commission)
         create_ticket(user=another_user, ticket_type=second_ticket_type, commission=second_ticket_commission)
 
-        finalize_event(event)
+        after_event_time = event.end_date + timedelta(hours=1)
+        with time_machine.travel(after_event_time):
+            finalize_event(event)
 
         commissions = OrganizationAccounting.objects.filter(
             balance=BalanceTypeChoice.DEBIT,
