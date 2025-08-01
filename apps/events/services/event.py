@@ -1,4 +1,6 @@
 from django.db.models import Sum
+from django.utils import timezone
+from rest_framework.exceptions import NotAcceptable
 
 from apps.events.choices import CommissionPayerChoice, EventStatusChoice
 from apps.events.models import Event, Ticket
@@ -14,6 +16,11 @@ def finalize_event(event: Event):
       - Creating a credit accounting record for the event's income.
       - If the seller pays the commission, also creates a debit accounting record for the commission amount.
     """
+    if event.end_date > timezone.now():
+        raise NotAcceptable("Event is not over yet.")
+    if event.status == EventStatusChoice.COMPLETED.value:
+        raise NotAcceptable("Event is already completed.")
+
     event.status = EventStatusChoice.COMPLETED.value
     event.save()
     tickets_summary = Ticket.objects.filter(ticket_type__event=event).aggregate(
@@ -21,7 +28,7 @@ def finalize_event(event: Event):
     )
 
     event_income = tickets_summary["total_amount"] or 0
-    event_commission = tickets_summary["total_commission"] or 0
+    event_commission = tickets_summary["total_commission"] or None
 
     OrganizationAccounting.objects.create(
         amount=event_income,
@@ -30,7 +37,7 @@ def finalize_event(event: Event):
         balance=BalanceTypeChoice.CREDIT,
         extra_arguments={"description": "event income"},
     )
-    if event.commission_payer == CommissionPayerChoice.SELLER:
+    if event.commission_payer == CommissionPayerChoice.SELLER and event_commission:
         OrganizationAccounting.objects.create(
             amount=event_commission,
             service=AccountingServiceTypeChoice.EVENT_PAYMENT,

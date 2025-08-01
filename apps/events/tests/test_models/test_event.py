@@ -1,6 +1,6 @@
 import pytest
+from rest_framework.exceptions import NotAcceptable
 
-from apps.core.exceptions import BadRequestException
 from apps.events.choices import CommissionPayerChoice, EventStatusChoice
 from apps.events.services.event import finalize_event
 from apps.payment.choices import BalanceTypeChoice
@@ -9,14 +9,14 @@ from apps.payment.models import OrganizationAccounting
 
 class TestEventModel:
     def test_finalize_event_raises_exception_when_event_is_not_over(self, event):
-        with pytest.raises(BadRequestException, match="Event is not over yet."):
+        with pytest.raises(NotAcceptable, match="Event is not over yet."):
             finalize_event(event)
 
     def test_finalize_event_raises_exception_when_event_is_already_completed(self, event):
         event.status = EventStatusChoice.COMPLETED
         event.save()
 
-        with pytest.raises(BadRequestException, match="Event is already completed."):
+        with pytest.raises(NotAcceptable, match="Event is already completed."):
             finalize_event(event)
 
     def test_finalize_event_creates_no_commission_when_commission_payer_is_the_buyer(self, event, ticket_type):
