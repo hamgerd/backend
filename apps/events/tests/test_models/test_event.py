@@ -2,7 +2,8 @@ from datetime import timedelta
 
 import pytest
 import time_machine
-from rest_framework.exceptions import NotAcceptable
+from django.utils import timezone
+from rest_framework.exceptions import NotAcceptable, ValidationError
 
 from apps.events.choices import CommissionPayerChoice, EventStatusChoice
 from apps.events.services.event import finalize_event
@@ -117,3 +118,27 @@ class TestEventModel:
         )
         assert commissions.count() == 1
         assert commissions[0].amount == 2 * first_ticket_commission + 2 * second_ticket_commission
+
+    def test_create_event_with_registration_opening_after_start_date_fails(self, create_event, organization):
+        start_date = timezone.now() + timedelta(days=7)
+        end_date = timezone.now() + timedelta(days=8)
+        registration_opening = start_date + timedelta(hours=1)
+        with pytest.raises(ValidationError, match="Registration opening must be before the event start date."):
+            create_event(
+                organization=organization,
+                start_date=start_date,
+                end_date=end_date,
+                registration_opening=registration_opening,
+            )
+
+    def test_create_event_with_registration_deadline_after_end_date_date_fails(self, create_event, organization):
+        start_date = timezone.now() + timedelta(days=7)
+        end_date = timezone.now() + timedelta(days=8)
+        registration_deadline = end_date + timedelta(hours=1)
+        with pytest.raises(ValidationError):
+            create_event(
+                organization=organization,
+                start_date=start_date,
+                end_date=end_date,
+                registration_deadline=registration_deadline,
+            )

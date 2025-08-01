@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -7,24 +7,40 @@ from faker import Faker
 
 from apps.events.choices import EventStatusChoice
 from apps.events.models import Event, Ticket, TicketType
+from apps.organizations.models import Organization
 from apps.payment.choices import BillStatusChoice
 
 faker = Faker()
 
 
 @pytest.fixture
-def event(db, organization):
+def create_event(db):
+    def _create_event(
+        organization: Organization,
+        start_date: datetime,
+        end_date: datetime,
+        registration_opening: None | datetime = None,
+        registration_deadline: None | datetime = None,
+    ):
+        return Event.objects.create(
+            title=faker.word(),
+            description=faker.text(120),
+            organization=organization,
+            start_date=start_date,
+            end_date=end_date,
+            status=EventStatusChoice.SCHEDULED,
+            registration_opening=registration_opening,
+            registration_deadline=registration_deadline,
+        )
+
+    return _create_event
+
+
+@pytest.fixture
+def event(db, organization, create_event):
     start_date = timezone.now() + timedelta(days=7)
     end_date = timezone.now() + timedelta(days=7, hours=2)
-
-    return Event.objects.create(
-        title=faker.word(),
-        description=faker.text(120),
-        organization=organization,
-        start_date=start_date,
-        end_date=end_date,
-        status=EventStatusChoice.SCHEDULED,
-    )
+    return create_event(organization, start_date, end_date)
 
 
 @pytest.fixture
