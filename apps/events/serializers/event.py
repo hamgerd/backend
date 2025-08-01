@@ -7,9 +7,16 @@ from ..models import Event, EventCategory, TicketType
 from .ticket import TicketTypeSerializer
 
 
+class EventCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventCategory
+        fields = ["title"]
+
+
 class EventSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
     ticket_types = TicketTypeSerializer(many=True)
+    category = EventCategorySerializer(many=True)
 
     class Meta:
         model = Event
