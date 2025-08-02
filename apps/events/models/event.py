@@ -83,9 +83,9 @@ class Event(BaseModel):
         """
         if self.status == EventStatusChoice.SCHEDULED:
             now = timezone.now()
-            opening = self.registration_opening or self.start_date
+            opening = self.registration_opening or self.created_at
             deadline = self.registration_deadline or self.end_date
-            if opening and deadline and opening < now < deadline:
+            if opening and deadline and opening <= now <= deadline:
                 return True
         return False
 
