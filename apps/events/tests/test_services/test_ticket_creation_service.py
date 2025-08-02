@@ -12,7 +12,7 @@ from apps.payment.models import TicketTransaction
 
 
 class TestTicketCreationService:
-    def test_create_ticket_failes_if_event_end_date_is_reached(self, ticket_type, event, another_user):
+    def test_create_ticket_fails_if_event_end_date_is_reached(self, ticket_type, event, another_user):
         ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": 1}]
 
         after_event_time = event.end_date + timedelta(hours=1)
@@ -22,7 +22,7 @@ class TestTicketCreationService:
                     event=event, user=another_user, ticket_types=ticket_types
                 )
 
-    def test_create_ticket_failes_if_event_registration_deadline_is_reached(self, ticket_type, event, another_user):
+    def test_create_ticket_fails_if_event_registration_deadline_is_reached(self, ticket_type, event, another_user):
         event.registration_deadline = event.end_date - timedelta(hours=2)
         ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": 1}]
 
@@ -33,13 +33,13 @@ class TestTicketCreationService:
                     event=event, user=another_user, ticket_types=ticket_types
                 )
 
-    def test_create_ticket_failes_if_non_existing_ticket_type_public_id_is_passed(self, event, another_user):
+    def test_create_ticket_fails_if_non_existing_ticket_type_public_id_is_passed(self, event, another_user):
         ticket_types = [{"ticket_type_public_id": uuid.uuid4(), "count": 1}]
 
         with pytest.raises(ValidationError, match="Wrong ticket type is sent."):
             TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
 
-    def test_create_ticket_failes_if_no_tickets_are_available(self, ticket_type, event, another_user):
+    def test_create_ticket_fails_if_no_tickets_are_available(self, ticket_type, event, another_user):
         first_ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": ticket_type.max_participants}]
         second_ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": 1}]
 
@@ -50,7 +50,7 @@ class TestTicketCreationService:
                 event=event, user=another_user, ticket_types=second_ticket_types
             )
 
-    def test_create_ticket_failes_if_not_enough_tickets_are_available(self, ticket_type, event, another_user):
+    def test_create_ticket_fails_if_not_enough_tickets_are_available(self, ticket_type, event, another_user):
         ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": ticket_type.max_participants + 1}]
 
         with pytest.raises(
