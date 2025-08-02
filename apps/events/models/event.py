@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from rest_framework.exceptions import NotAcceptable, ValidationError
 
 from apps.core.models import BaseModel
 from apps.organizations.models import Organization
@@ -88,6 +89,19 @@ class Event(BaseModel):
                 return True
         return False
 
+    def clean(self):
+        if self.registration_opening:
+            if not self.registration_opening < self.start_date:
+                raise ValidationError("Registration opening must be before the event start date.")
+        if self.registration_deadline:
+            if self.registration_deadline > self.end_date:
+                raise ValidationError()
+
     def save(self, *args, **kwargs):
+        self.clean()
+        if self.pk:  # the object exists, so it's an update
+            old = self.__class__.objects.get(pk=self.pk)
+            if old.status == EventStatusChoice.COMPLETED.value:
+                raise NotAcceptable("Event is already completed.")
         self.full_clean()
         super().save(*args, **kwargs)
