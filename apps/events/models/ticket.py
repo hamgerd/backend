@@ -19,7 +19,7 @@ class TicketType(BaseModel):
     description = models.TextField(blank=True)
     max_participants = models.PositiveIntegerField(validators=[validators.MinValueValidator(1)], null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="ticket_types")
-    price = models.DecimalField(max_digits=12, decimal_places=2, validators=[zero_or_greater_than_1000])
+    price = models.DecimalField(max_digits=12, decimal_places=0, validators=[zero_or_greater_than_1000])
     # currency = models.CharField(max_length=3, choices=CurrencyEnum.choices())
 
     def save(self, *args, **kwargs):
