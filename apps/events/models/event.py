@@ -2,10 +2,10 @@ from django.db import models
 from django.utils import timezone
 
 from apps.core.models import BaseModel
+from apps.core.validators import geo_location_validator
 from apps.organizations.models import Organization
 
 from ..choices import EventStatusChoice
-from ..validators import geo_location_validator
 
 
 class EventCategory(BaseModel):

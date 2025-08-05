@@ -6,6 +6,7 @@ from django.db import models
 
 from apps.core.models import BaseModel
 from apps.core.utils.identicon import add_default_image
+from apps.core.validators import geo_location_validator
 
 
 class Organization(BaseModel):
@@ -22,6 +23,7 @@ class Organization(BaseModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="organizations")
     address = models.TextField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
+    geo_location = models.JSONField(null=True, blank=True, validators=[geo_location_validator])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
