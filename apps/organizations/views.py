@@ -1,8 +1,9 @@
-import django_filters.rest_framework
+from django_filters import rest_framework as filters
 from rest_framework import permissions
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
+from .filters import OrganizationFilter
 from .models import Organization
 from .permissions import IsOwnerOrReadOnly
 from .serializer import OrganizationCreateSerializer, OrganizationSerializer
@@ -10,8 +11,8 @@ from .serializer import OrganizationCreateSerializer, OrganizationSerializer
 
 class OrganizationViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin):
     queryset = Organization.objects.all()
-    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    filterset_fields = ["name"]
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = OrganizationFilter
     lookup_field = "username"
     lookup_url_kwarg = "org_username"
 

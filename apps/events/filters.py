@@ -4,6 +4,7 @@ from .models import Event
 
 
 class EventFilter(filters.FilterSet):
+    title = filters.CharFilter(lookup_expr="icontains")
     organization_username = filters.CharFilter(field_name="organization__username", lookup_expr="iexact")
 
     class Meta:
