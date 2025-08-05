@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.core.serializers import GeoLocationSerializer
 from apps.organizations.models import Organization
 from apps.organizations.serializer import OrganizationSerializer
 
@@ -39,12 +40,6 @@ class EventSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["public_id", "created_at", "updated_at"]
-
-
-class GeoLocationSerializer(serializers.Serializer):
-    latitude = serializers.FloatField()
-    longitude = serializers.FloatField()
-    zoom = serializers.FloatField()
 
 
 class EventCreateSerializer(serializers.ModelSerializer):

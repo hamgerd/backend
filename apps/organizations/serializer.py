@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from apps.core.serializers import GeoLocationSerializer
+
 from .models import Organization
 
 
@@ -22,6 +24,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 
 class OrganizationCreateSerializer(serializers.ModelSerializer):
+    geo_location = GeoLocationSerializer(required=False, allow_null=True)
+
     class Meta:
         model = Organization
         fields = ["name", "username", "logo", "description", "email", "address", "website", "geo_location"]
