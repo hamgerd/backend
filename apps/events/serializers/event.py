@@ -44,8 +44,8 @@ class EventSerializer(serializers.ModelSerializer):
 
 class EventCreateSerializer(serializers.ModelSerializer):
     ticket_types = TicketTypeSerializer(many=True)
-    organization = serializers.SlugRelatedField(slug_field="public_id", queryset=Organization.objects.all())
-    category = serializers.SlugRelatedField(slug_field="public_id", queryset=EventCategory.objects.all())
+    organization = serializers.SlugRelatedField(slug_field="username", queryset=Organization.objects.all())
+    category = serializers.SlugRelatedField(slug_field="title", queryset=EventCategory.objects.all())
     geo_location = GeoLocationSerializer(required=False, allow_null=True)
 
     def create(self, validated_data):
