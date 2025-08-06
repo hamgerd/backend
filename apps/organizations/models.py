@@ -7,6 +7,7 @@ from django.db import models
 from apps.core.models import BaseModel
 from apps.core.utils.identicon import add_default_image
 from apps.core.validators import geo_location_validator
+from apps.socials.models import AbstractSocialLink
 
 
 class Organization(BaseModel):
@@ -44,3 +45,10 @@ class Organization(BaseModel):
         if not self.logo:
             add_default_image(self, image_field_name="logo")
         super().save(*args, **kwargs)
+
+
+class OrganizationSocialLink(AbstractSocialLink):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="social_links")
+
+    class Meta:
+        unique_together = ("organization", "platform")
