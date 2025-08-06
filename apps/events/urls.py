@@ -6,6 +6,7 @@ from . import views
 app_name = "events"
 
 router = routers.SimpleRouter()
+router.register("categories", views.EventCategoryViewSet, basename="category")
 router.register("", views.EventViewSet, basename="event")
 
 events_router = routers.NestedSimpleRouter(router, "", lookup="event")
