@@ -16,6 +16,7 @@ LOCAL_APPS = [
     "apps.users.apps.UsersConfig",
     "apps.verification.apps.VerificationConfig",
     "apps.payment.apps.PaymentConfig",
+    "apps.socials.apps.SocialsConfig",
     "apps.news.apps.NewsConfig",
 ]
 THIRD_PARY_APPS = [
