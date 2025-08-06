@@ -36,8 +36,8 @@ class Event(BaseModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=EventStatusChoice.choices, default=EventStatusChoice.DRAFT.value)
-    registration_opening = models.DateTimeField(null=True)
-    registration_deadline = models.DateTimeField(null=True)
+    registration_opening = models.DateTimeField(null=True, blank=True)
+    registration_deadline = models.DateTimeField(null=True, blank=True)
     # TODO: AB external_url for redirecting to user landing page
     # TODO: AE add faq field to get and return json
 
