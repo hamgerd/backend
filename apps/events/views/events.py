@@ -23,11 +23,10 @@ class EventViewSet(viewsets.ModelViewSet):
     filterset_class = EventFilter
 
     def get_serializer_class(self):
-        match self.action:
-            case "create":
-                return EventCreateSerializer
-            case _:
-                return EventSerializer
+        if self.action == "create":
+            return EventCreateSerializer
+        else:
+            return EventSerializer
 
     @action(methods=["get"], detail=False)
     def featured(self, request):

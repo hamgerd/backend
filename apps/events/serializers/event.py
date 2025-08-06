@@ -17,7 +17,7 @@ class EventCategorySerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
     ticket_types = TicketTypeSerializer(many=True)
-    category = EventCategorySerializer(many=True)
+    categories = EventCategorySerializer(many=True)
 
     class Meta:
         model = Event
@@ -28,7 +28,7 @@ class EventSerializer(serializers.ModelSerializer):
             "organization",
             "ticket_types",
             "image",
-            "category",
+            "categories",
             "status",
             "start_date",
             "end_date",
@@ -45,14 +45,23 @@ class EventSerializer(serializers.ModelSerializer):
 class EventCreateSerializer(serializers.ModelSerializer):
     ticket_types = TicketTypeSerializer(many=True)
     organization = serializers.SlugRelatedField(slug_field="username", queryset=Organization.objects.all())
-    category = serializers.SlugRelatedField(slug_field="title", queryset=EventCategory.objects.all())
+    categories = serializers.SlugRelatedField(
+        slug_field="title", many=True, required=False, queryset=EventCategory.objects.all()
+    )
     geo_location = GeoLocationSerializer(required=False, allow_null=True)
 
     def create(self, validated_data):
         ticket_types_data = validated_data.pop("ticket_types")
+        categories_data = validated_data.pop("categories", [])
+
+        categories = EventCategory.objects.filter(title__in=categories_data)
         event = Event.objects.create(**validated_data)
+
         for ticket_type_data in ticket_types_data:
             TicketType.objects.create(event=event, **ticket_type_data)
+
+        event.categories.set(categories)
+
         return event
 
     class Meta:
@@ -63,7 +72,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
             "description",
             "organization",
             "image",
-            "category",
+            "categories",
             "start_date",
             "end_date",
             "location",
