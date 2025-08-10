@@ -6,6 +6,10 @@ from .base import ALLOWED_HOSTS, REST_FRAMEWORK
 
 ALLOWED_HOSTS += ["hamgerd.ir", "api.hamgerd.ir"]
 CSRF_TRUSTED_ORIGINS = ["https://api.hamgerd.ir", "https://hamgerd.ir"]
+CORS_ALLOWED_ORIGINS = [
+    "https://hamgerd.ir",
+    "https://api.hamgerd.ir",
+]
 
 REST_FRAMEWORK_PRODUCTION = {
     "DEFAULT_THROTTLE_CLASSES": [
