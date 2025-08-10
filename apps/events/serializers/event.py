@@ -21,6 +21,7 @@ class EventSerializer(serializers.ModelSerializer):
             "ticket_types",
             "image",
             "category",
+            "status",
             "start_date",
             "end_date",
             "location",

@@ -28,3 +28,8 @@ dependencies = [
     "gunicorn>=23.0.0",
     "sentry-sdk[django]>=2.33.2",
 ]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+]
