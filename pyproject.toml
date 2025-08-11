@@ -27,6 +27,7 @@ dependencies = [
     "django-filter>=25.1",
     "gunicorn>=23.0.0",
     "sentry-sdk[django]>=2.33.2",
+    "drf-standardized-errors[openapi]>=0.15.0",
 ]
 
 [dependency-groups]
