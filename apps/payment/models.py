@@ -54,7 +54,7 @@ class CommissionRules(BaseModel):
 
 class OrganizationAccounting(BaseModel):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="accounts")
-    service = models.CharField(max_length=5, choices=AccountingServiceTypeChoice.choices)
-    balance = models.CharField(max_length=5, choices=BalanceTypeChoice.choices)
+    service = models.CharField(max_length=30, choices=AccountingServiceTypeChoice.choices)
+    balance = models.CharField(max_length=10, choices=BalanceTypeChoice.choices)
     amount = models.DecimalField(max_digits=12, decimal_places=0)
-    extra_arguments = models.JSONField(blank=True, default={})
+    extra_arguments = models.JSONField(blank=True, default=dict)
