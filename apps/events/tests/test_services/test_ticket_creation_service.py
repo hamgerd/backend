@@ -163,4 +163,47 @@ class TestTicketCreationService:
         assert TicketTransaction.objects.count() == 1
         assert transaction.amount == (first_ticket_type.price + second_ticket_type.price) * 2
 
-    # todo: create tests for free tickets and commission rules
+    def test_create_single_free_ticket(self, create_ticket_type, event, another_user):
+        ticket_type = create_ticket_type(10, event, 0)
+        ticket_types = [
+            {"ticket_type_public_id": ticket_type.public_id, "count": 1},
+        ]
+
+        TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
+        ticket_type_tickets = Ticket.objects.filter(ticket_type=ticket_type)
+        transaction = TicketTransaction.objects.first()
+
+        assert Ticket.objects.count() == 1
+        assert ticket_type_tickets.count() == 1
+        assert ticket_type_tickets[0].commission == 0
+        assert ticket_type_tickets[0].final_amount == 0
+        assert TicketTransaction.objects.count() == 1
+        assert transaction.amount == 0
+
+    def test_create_single_non_free_ticket_and_single_free_ticket_with_commission_rules(
+        self, create_ticket_type, event, another_user, create_commission_rule
+    ):
+        first_ticket_type = create_ticket_type(10, event, 0)
+        second_ticket_type = create_ticket_type(5, event, 20000)
+        second_ticket_type_commission = create_commission_rule(
+            second_ticket_type.price - 100, second_ticket_type.price + 100, CommissionActionTypeChoice.CONSTANT, 200
+        )
+        ticket_types = [
+            {"ticket_type_public_id": first_ticket_type.public_id, "count": 1},
+            {"ticket_type_public_id": second_ticket_type.public_id, "count": 1},
+        ]
+
+        TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
+        first_ticket_type_tickets = Ticket.objects.filter(ticket_type=first_ticket_type)
+        second_ticket_type_tickets = Ticket.objects.filter(ticket_type=second_ticket_type)
+        transaction = TicketTransaction.objects.first()
+
+        assert Ticket.objects.count() == 2
+        assert first_ticket_type_tickets.count() == 1
+        assert second_ticket_type_tickets.count() == 1
+        assert first_ticket_type_tickets[0].commission == 0
+        assert second_ticket_type_tickets[0].commission == second_ticket_type_commission.amount
+        assert first_ticket_type_tickets[0].final_amount == 0
+        assert second_ticket_type_tickets[0].final_amount == second_ticket_type.price
+        assert TicketTransaction.objects.count() == 1
+        assert transaction.amount == second_ticket_type.price
