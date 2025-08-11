@@ -6,8 +6,10 @@ import time_machine
 from rest_framework.exceptions import ValidationError
 
 from apps.core.exceptions import BadRequestException
+from apps.events.choices import CommissionPayerChoice
 from apps.events.models import Ticket
 from apps.events.services.tickets import TicketCreationService
+from apps.payment.choices import CommissionActionTypeChoice
 from apps.payment.models import TicketTransaction
 
 
@@ -59,6 +61,26 @@ class TestTicketCreationService:
         ):
             TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
 
+    def test_create_single_non_free_ticket_with_commission_payer_set_to_buyer(
+        self, ticket_type, event, another_user, create_commission_rule
+    ):
+        ticket_type_commission = create_commission_rule(
+            ticket_type.price - 100, ticket_type.price + 100, CommissionActionTypeChoice.CONSTANT, 100
+        )
+        event.commission_payer = CommissionPayerChoice.BUYER
+        event.save()
+        ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": 1}]
+
+        TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
+        ticket = Ticket.objects.first()
+        transaction = TicketTransaction.objects.first()
+
+        assert Ticket.objects.count() == 1
+        assert ticket.commission == 100
+        assert ticket.final_amount == ticket_type.price
+        assert TicketTransaction.objects.count() == 1
+        assert transaction.amount == ticket_type.price + ticket_type_commission.amount
+
     def test_create_single_non_free_ticket_with_no_commission_rule(self, ticket_type, event, another_user):
         ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": 1}]
 
@@ -109,5 +131,36 @@ class TestTicketCreationService:
         assert second_ticket_type_tickets[0].final_amount == second_ticket_type.price
         assert TicketTransaction.objects.count() == 1
         assert transaction.amount == first_ticket_type.price + second_ticket_type.price
+
+    def test_create_two_non_free_tickets_of_different_types_with_commission_rules(
+        self, create_ticket_type, event, another_user, create_commission_rule
+    ):
+        first_ticket_type = create_ticket_type(10, event, 10000)
+        second_ticket_type = create_ticket_type(5, event, 20000)
+        first_ticket_type_commission = create_commission_rule(
+            first_ticket_type.price - 100, first_ticket_type.price + 100, CommissionActionTypeChoice.CONSTANT, 100
+        )
+        second_ticket_type_commission = create_commission_rule(
+            second_ticket_type.price - 100, second_ticket_type.price + 100, CommissionActionTypeChoice.CONSTANT, 200
+        )
+        ticket_types = [
+            {"ticket_type_public_id": first_ticket_type.public_id, "count": 2},
+            {"ticket_type_public_id": second_ticket_type.public_id, "count": 2},
+        ]
+
+        TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
+        first_ticket_type_tickets = Ticket.objects.filter(ticket_type=first_ticket_type)
+        second_ticket_type_tickets = Ticket.objects.filter(ticket_type=second_ticket_type)
+        transaction = TicketTransaction.objects.first()
+
+        assert Ticket.objects.count() == 4
+        assert first_ticket_type_tickets.count() == 2
+        assert second_ticket_type_tickets.count() == 2
+        assert first_ticket_type_tickets[0].commission == first_ticket_type_commission.amount
+        assert second_ticket_type_tickets[0].commission == second_ticket_type_commission.amount
+        assert first_ticket_type_tickets[0].final_amount == first_ticket_type.price
+        assert second_ticket_type_tickets[0].final_amount == second_ticket_type.price
+        assert TicketTransaction.objects.count() == 1
+        assert transaction.amount == (first_ticket_type.price + second_ticket_type.price) * 2
 
     # todo: create tests for free tickets and commission rules
