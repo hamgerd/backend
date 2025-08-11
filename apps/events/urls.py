@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework_nested import routers
 
 from . import views
@@ -5,6 +6,7 @@ from . import views
 app_name = "events"
 
 router = routers.SimpleRouter()
+router.register("categories", views.EventCategoryViewSet, basename="category")
 router.register("", views.EventViewSet, basename="event")
 
 events_router = routers.NestedSimpleRouter(router, "", lookup="event")
@@ -18,4 +20,5 @@ urlpatterns = [
     *router.urls,
     *events_router.urls,
     *tickets_router.urls,
+    path("tickets/me/", views.UserTicketsView.as_view(), name="user-tickets"),
 ]

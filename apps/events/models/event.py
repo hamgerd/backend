@@ -3,6 +3,7 @@ from django.utils import timezone
 from rest_framework.exceptions import NotAcceptable, ValidationError
 
 from apps.core.models import BaseModel
+from apps.core.validators import geo_location_validator
 from apps.organizations.models import Organization
 
 from ..choices import CommissionPayerChoice, EventStatusChoice
@@ -27,7 +28,7 @@ class Event(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField()
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="events")
-    category = models.ForeignKey(EventCategory, on_delete=models.CASCADE, related_name="events", null=True, blank=True)
+    categories = models.ManyToManyField(EventCategory, related_name="events", blank=True)
     image = models.ImageField(upload_to="events/images/", null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()

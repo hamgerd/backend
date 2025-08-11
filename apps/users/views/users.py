@@ -52,9 +52,7 @@ class UserRegisterView(GenericAPIView):
     def post(self, request: Request):
         email = User.objects.normalize_email(request.data.get("email"))
         user = User.objects.filter(email=email).first()
-        if user:
-            if user.is_active:
-                return Response({"email": ["This email is already registered."]}, status=400)
+        if user and not user.is_active:
             UserRegisterService().send_register_verification_email(user)
             return Response(
                 {"detail": "This email is already registered but not verified. We've resent the verification email."},

@@ -1,36 +1,30 @@
+from django_filters import rest_framework as filters
 from rest_framework import permissions
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.viewsets import GenericViewSet
 
+from .filters import OrganizationFilter
 from .models import Organization
 from .permissions import IsOwnerOrReadOnly
 from .serializer import OrganizationCreateSerializer, OrganizationSerializer
 
 
-class OrganizationCreateView(ListCreateAPIView):
+class OrganizationViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin):
     queryset = Organization.objects.all()
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return OrganizationCreateSerializer
-        return OrganizationSerializer
-
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
-
-class OrganizationDetailView(RetrieveUpdateAPIView):
-    permission_classes = [IsOwnerOrReadOnly]
-    queryset = Organization.objects.all()
-    serializer_class = OrganizationSerializer
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = OrganizationFilter
     lookup_field = "username"
     lookup_url_kwarg = "org_username"
 
     def get_serializer_class(self):
-        if self.request.method == "PATCH" or self.request.method == "PUT":
+        if self.action in ["create", "update", "partial_update"]:
             return OrganizationCreateSerializer
         return OrganizationSerializer
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return [permissions.IsAuthenticated(), IsOwnerOrReadOnly()]
+        return super().get_permissions()
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
