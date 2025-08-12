@@ -1,13 +1,15 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
 from .views import (
-    OrganizationCreateView,
-    OrganizationDetailView,
+    OrganizationViewSet,
 )
 
 app_name = "organizations"
 
+router = DefaultRouter()
+router.register(r"", OrganizationViewSet)
+
 urlpatterns = [
-    path("", OrganizationCreateView.as_view(), name="organization-list"),
-    path("<str:org_username>/", OrganizationDetailView.as_view(), name="organization-detail"),
+    path("", include(router.urls)),
 ]

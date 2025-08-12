@@ -9,7 +9,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.core.tasks.email import send_email
 from apps.users.models import User
@@ -19,9 +18,10 @@ from apps.users.serializers.user import (
     PasswordResetSerializer,
     UserRegistrationSerializer,
 )
+from apps.users.views.services import UserRegisterService
 from apps.verification.choices import VerificationTypeChoices
 from apps.verification.models import VerificationToken
-from config.settings.base import EMAIL_VERIFICATION_URL, PASSWORD_RESET_URL
+from config.settings.base import PASSWORD_RESET_URL
 
 
 class UserMeView(GenericAPIView):
@@ -50,41 +50,20 @@ class UserRegisterView(GenericAPIView):
     )
     @transaction.atomic
     def post(self, request: Request):
+        email = User.objects.normalize_email(request.data.get("email"))
+        user = User.objects.filter(email=email).first()
+        if user and not user.is_active:
+            UserRegisterService().send_register_verification_email(user)
+            return Response(
+                {"detail": "This email is already registered but not verified. We've resent the verification email."},
+                status=200,
+            )
+
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            user: User = serializer.create(serializer.validated_data)
-            self._add_refresh_token_to_serializer_context(serializer, user)
-            verification_token = self._create_email_verification_token(user)
-            transaction.on_commit(lambda: self._send_verification_email(user, verification_token))
+            UserRegisterService().register(serializer)
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-
-    @staticmethod
-    def _add_refresh_token_to_serializer_context(serializer, user):
-        token = RefreshToken.for_user(user)
-        serializer.context["refresh_token"] = str(token)
-
-    @staticmethod
-    def _send_verification_email(user, verification_token):
-        send_email.delay(
-            subject="Verification Email",
-            template_name="users/verification_email.html",
-            from_email=None,
-            recipient_list=[user.email],
-            context={
-                "title": "Verification Email",
-                "token": verification_token.token,
-                "email_verification_url": EMAIL_VERIFICATION_URL,
-            },
-        )
-
-    @staticmethod
-    def _create_email_verification_token(user):
-        return VerificationToken.objects.create(
-            user=user,
-            type=VerificationTypeChoices.EMAIL,
-            expire_at=timezone.now() + timedelta(days=2),
-        )
 
 
 class PasswordResetRequestView(GenericAPIView):

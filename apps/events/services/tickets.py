@@ -1,39 +1,58 @@
 from collections import defaultdict
+from decimal import Decimal
 
 from django.conf import settings
 from django.db.transaction import atomic
-from rest_framework.exceptions import NotAcceptable, ValidationError
+from rest_framework.exceptions import ValidationError
 
-from apps.payment.models import TicketTransaction
+from apps.payment.models import CommissionRules, TicketTransaction
 
+from ...core.exceptions import BadRequestException
+from ...payment.choices import CommissionActionTypeChoice
+from ..choices import CommissionPayerChoice
 from ..models import Event, Ticket, TicketType
 from ..serializers.ticket import TicketCreateResponseSerializer
 
 
 class TicketCreationService:
-    @classmethod
     @atomic
     def handle_ticket_creation(
-        cls, event: Event, user: settings.AUTH_USER_MODEL, ticket_types: list
+        self, event: Event, user: settings.AUTH_USER_MODEL, ticket_types: list
     ) -> TicketCreateResponseSerializer:
-        cls._is_event_open_to_register(event)
-        cls._is_ticket_types_valid(event, ticket_types)
-        cls._is_enough_tickets_available(event, ticket_types)
+        self._is_event_open_to_register(event)
+        self._is_ticket_types_valid(event, ticket_types)
+        self._is_enough_tickets_available(event, ticket_types)
 
-        tickets = cls._create_ticket_objects(user, ticket_types)
-        response_tickets_data = cls._get_response_tickets_data(tickets)
-        transaction = cls._create_transaction(tickets)
+        tickets = self._create_ticket_objects(user, ticket_types, event)
+        response_tickets_data = self._get_response_tickets_data(tickets)
+        transaction = self._create_transaction(tickets, event)
 
         data = {"transaction_public_id": transaction.public_id, "ticket_data": response_tickets_data}
         serializer = TicketCreateResponseSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return serializer
 
+    def _create_ticket_objects(self, user: settings.AUTH_USER_MODEL, ticket_types: list, event: Event):
+        tickets = []
+        for ticket_type in ticket_types:
+            if ticket_type["count"] > 0:
+                ticket_type_obj = TicketType.objects.get(public_id=ticket_type["ticket_type_public_id"])
+                commission = self._get_commission(ticket_type_obj.price)
+                for _ in range(ticket_type["count"]):
+                    ticket = Ticket(
+                        user=user,
+                        ticket_type=ticket_type_obj,
+                        final_amount=ticket_type_obj.price,
+                        commission=commission,
+                    )
+                    tickets.append(ticket)
+        return tickets
+
     @staticmethod
     def _is_event_open_to_register(event: Event):
         is_open = event.is_open_to_register()
         if not is_open:
-            raise NotAcceptable("Event is not open to register")
+            raise BadRequestException("Event is not open to register.")
 
     @staticmethod
     def _is_ticket_types_valid(event: Event, ticket_types: list):
@@ -62,17 +81,6 @@ class TicketCreationService:
                     )
 
     @staticmethod
-    def _create_ticket_objects(user: settings.AUTH_USER_MODEL, ticket_types: list):
-        tickets = []
-        for ticket_type in ticket_types:
-            if ticket_type["count"] > 0:
-                ticket_type_obj = TicketType.objects.get(public_id=ticket_type["ticket_type_public_id"])
-                for _ in range(ticket_type["count"]):
-                    ticket = Ticket(user=user, ticket_type=ticket_type_obj, final_amount=ticket_type_obj.price)
-                    tickets.append(ticket)
-        return tickets
-
-    @staticmethod
     def _get_response_tickets_data(tickets: list[Ticket]) -> list:
         """Get the list of ticket_types with ticket public_id list asossiated with them"""
         tickets_by_type = defaultdict(list)
@@ -84,10 +92,30 @@ class TicketCreationService:
         ]
 
     @staticmethod
-    def _create_transaction(tickets: list[Ticket]):
-        total_amount = sum(ticket.final_amount for ticket in tickets)
+    def _create_transaction(tickets: list[Ticket], event: Event):
+        if event.commission_payer == CommissionPayerChoice.SELLER:
+            total_amount = sum(ticket.final_amount for ticket in tickets)
+        elif event.commission_payer == CommissionPayerChoice.BUYER:
+            total_amount = sum(ticket.final_amount + ticket.commission for ticket in tickets)
+        else:
+            raise ValueError("Unhandled Commission Payer")
+
         tx = TicketTransaction.objects.create(amount=total_amount)
         for ticket in tickets:
             ticket.transaction = tx
             ticket.save()
         return tx
+
+    @staticmethod
+    def _get_commission(ticket_type_price: Decimal):
+        commission_rule = CommissionRules.objects.get_commission_rule(ticket_type_price)
+        if commission_rule:
+            if commission_rule.action == CommissionActionTypeChoice.PERCENTAGE:
+                commission = commission_rule.amount * ticket_type_price / 100
+            elif commission_rule.action == CommissionActionTypeChoice.CONSTANT:
+                commission = commission_rule.amount
+            else:
+                raise ValueError("Unhandled commission type")
+            return commission
+
+        return 0

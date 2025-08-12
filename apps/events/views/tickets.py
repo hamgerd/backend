@@ -1,8 +1,10 @@
-from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import mixins, permissions, status, viewsets
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view, inline_serializer
+from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotAcceptable, PermissionDenied
 from rest_framework.generics import GenericAPIView, get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -54,7 +56,7 @@ class TicketViewSet(
         serializer = self.get_serializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         event = get_object_or_404(Event, public_id=event_public_id)
-        response_serializer = TicketCreationService.handle_ticket_creation(
+        response_serializer = TicketCreationService().handle_ticket_creation(
             event, request.user, serializer.validated_data
         )
         return Response(response_serializer.data, status.HTTP_201_CREATED)
@@ -63,11 +65,35 @@ class TicketViewSet(
 class UserTicketsView(GenericAPIView):
     serializer_class = TicketSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
 
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name="PaginatedTicketResponse",
+                fields={
+                    "count": serializers.IntegerField(),
+                    "next": serializers.CharField(allow_null=True),
+                    "previous": serializers.CharField(allow_null=True),
+                    "results": TicketSerializer(many=True),
+                },
+            )
+        },
+        parameters=[
+            OpenApiParameter(
+                "page",
+                description="A page number within the paginated result set.",
+                type=OpenApiTypes.INT,
+                location="query",
+            )
+        ],
+    )
     def get(self, request):
-        user_tickets = Ticket.objects.select_related("user").filter(user=request.user)
-        serializer = self.get_serializer(user_tickets, many=True)
-        return Response(serializer.data)
+        queryset = Ticket.objects.select_related("user").filter(user=request.user)
+        queryset = self.filter_queryset(queryset)
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 @extend_schema_view(

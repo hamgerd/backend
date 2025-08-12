@@ -5,7 +5,7 @@ import uuid
 import django.core.validators
 from django.db import migrations, models
 
-import apps.events.validators
+import apps.core.validators
 
 
 class Migration(migrations.Migration):
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ("location", models.CharField(max_length=255, null=True)),
                 (
                     "geo_location",
-                    models.JSONField(blank=True, null=True, validators=[apps.events.validators.geo_location_validator]),
+                    models.JSONField(blank=True, null=True, validators=[apps.core.validators.geo_location_validator]),
                 ),
                 ("is_active", models.BooleanField(default=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),

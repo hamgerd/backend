@@ -1,11 +1,12 @@
 from django.db import models
 from django.utils import timezone
+from rest_framework.exceptions import NotAcceptable, ValidationError
 
 from apps.core.models import BaseModel
+from apps.core.validators import geo_location_validator
 from apps.organizations.models import Organization
 
-from ..choices import EventStatusChoice
-from ..validators import geo_location_validator
+from ..choices import CommissionPayerChoice, EventStatusChoice
 
 
 class EventCategory(BaseModel):
@@ -26,18 +27,21 @@ class Event(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField()
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="events")
-    category = models.ForeignKey(EventCategory, on_delete=models.CASCADE, related_name="events", null=True, blank=True)
+    categories = models.ManyToManyField(EventCategory, related_name="events", blank=True)
     image = models.ImageField(upload_to="events/images/", null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    location = models.CharField(max_length=255, null=True)
+    location = models.CharField(blank=True, max_length=255)  # add blank=True
     geo_location = models.JSONField(null=True, blank=True, validators=[geo_location_validator])
     is_active = models.BooleanField(default=True)
+    commission_payer = models.CharField(
+        max_length=3, choices=CommissionPayerChoice.choices, default=CommissionPayerChoice.SELLER
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=EventStatusChoice.choices, default=EventStatusChoice.DRAFT.value)
-    registration_opening = models.DateTimeField(null=True)
-    registration_deadline = models.DateTimeField(null=True)
+    registration_opening = models.DateTimeField(blank=True, null=True)
+    registration_deadline = models.DateTimeField(blank=True, null=True)
     # TODO: AB external_url for redirecting to user landing page
     # TODO: AE add faq field to get and return json
 
@@ -79,12 +83,25 @@ class Event(BaseModel):
         """
         if self.status == EventStatusChoice.SCHEDULED:
             now = timezone.now()
-            opening = self.registration_opening or self.start_date
+            opening = self.registration_opening or self.created_at
             deadline = self.registration_deadline or self.end_date
-            if opening and deadline and opening < now < deadline:
+            if opening and deadline and opening <= now <= deadline:
                 return True
         return False
 
+    def clean(self):
+        if self.registration_opening:
+            if not self.registration_opening < self.start_date:
+                raise ValidationError("Registration opening must be before the event start date.")
+        if self.registration_deadline:
+            if self.registration_deadline > self.end_date:
+                raise ValidationError()
+
     def save(self, *args, **kwargs):
+        self.clean()
+        if self.pk:  # the object exists, so it's an update
+            old = self.__class__.objects.get(pk=self.pk)
+            if old.status == EventStatusChoice.COMPLETED.value:
+                raise NotAcceptable("Event is already completed.")
         self.full_clean()
         super().save(*args, **kwargs)

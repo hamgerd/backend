@@ -27,9 +27,19 @@ dependencies = [
     "django-filter>=25.1",
     "gunicorn>=23.0.0",
     "sentry-sdk[django]>=2.33.2",
+    "drf-standardized-errors[openapi]>=0.15.0",
 ]
 
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
+    "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
+    "time-machine>=2.16.0",
 ]
+
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.testing"
+# -- recommended but optional:
+python_files = ["test_*.py", "*_test.py", "testing/python/*.py"]

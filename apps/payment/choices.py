@@ -10,3 +10,17 @@ class BillStatusChoice(TextChoices):
 class CurrencyChoice(TextChoices):
     IRR = "IRR", "IRR"
     IRT = "IRT", "IRT"
+
+
+class CommissionActionTypeChoice(TextChoices):
+    PERCENTAGE = "p", "percentage"
+    CONSTANT = "c", "constant"
+
+
+class AccountingServiceTypeChoice(TextChoices):
+    EVENT_PAYMENT = "eventpayment", "event payment"
+
+
+class BalanceTypeChoice(TextChoices):
+    DEBIT = "dbt", "Debit"
+    CREDIT = "crd", "Credit"

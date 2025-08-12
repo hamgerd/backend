@@ -4,6 +4,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
+from apps.core.exceptions import BadRequestException
 from apps.users.serializers.verification import EmailVerificationSerializer
 from apps.verification.models import VerificationToken
 
@@ -36,6 +37,8 @@ class EmailVerifyView(GenericAPIView):
             raise ValidationError({"error": "Token invalid or expired"})
         if token_instance.is_expired:
             raise ValidationError({"error": "Token expired"})
+        if token_instance.user.is_active:
+            raise BadRequestException({"error": "User already verified"})
 
         token_instance.user.is_active = True
         token_instance.user.save()

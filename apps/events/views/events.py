@@ -5,11 +5,13 @@ from rest_framework.response import Response
 
 from ..filters import EventFilter
 from ..models import Event
+from ..models.event import EventCategory
 from ..permissions import OrganizationOwnerPermission
 from ..serializers import (
     EventCreateSerializer,
     EventSerializer,
 )
+from ..serializers.event import EventCategorySerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -21,11 +23,10 @@ class EventViewSet(viewsets.ModelViewSet):
     filterset_class = EventFilter
 
     def get_serializer_class(self):
-        match self.action:
-            case "create":
-                return EventCreateSerializer
-            case _:
-                return EventSerializer
+        if self.action == "create":
+            return EventCreateSerializer
+        else:
+            return EventSerializer
 
     @action(methods=["get"], detail=False)
     def featured(self, request):
@@ -33,3 +34,8 @@ class EventViewSet(viewsets.ModelViewSet):
         queryset = Event.get_featured_events()
         serializer = EventSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class EventCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = EventCategory.objects.all()
+    serializer_class = EventCategorySerializer
