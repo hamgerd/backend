@@ -22,8 +22,44 @@ REST_FRAMEWORK_PRODUCTION = {
 
 REST_FRAMEWORK.update(REST_FRAMEWORK_PRODUCTION)
 
-SENTRY_DSN = config("SENTRY_DSN", default=None)
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {levelname} {name} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+            "level": config("DJANGO_LOG_LEVEL", "DEBUG"),
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "django_app.log",
+            "maxBytes": 1024 * 1024 * 5,  # 5MB
+            "backupCount": 5,
+            "formatter": "verbose",
+            "level": "WARNING",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": config("DJANGO_LOG_LEVEL", "WARNING"),
+            "propagate": True,
+        },
+    },
+}
 
+SENTRY_DSN = config("SENTRY_DSN", default=None)
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
