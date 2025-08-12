@@ -6,11 +6,12 @@ import time_machine
 from rest_framework.exceptions import ValidationError
 
 from apps.core.exceptions import BadRequestException
-from apps.events.choices import CommissionPayerChoice
+from apps.events.choices import CommissionPayerChoice, EventStatusChoice, TicketStatusChoice
 from apps.events.models import Ticket
 from apps.events.services.tickets import TicketCreationService
-from apps.payment.choices import CommissionActionTypeChoice
+from apps.payment.choices import BillStatusChoice, CommissionActionTypeChoice
 from apps.payment.models import TicketTransaction
+from apps.payment.tasks import invalidate_transactions
 
 
 class TestTicketCreationService:
@@ -36,12 +37,27 @@ class TestTicketCreationService:
                 )
 
     def test_create_ticket_fails_if_event_status_not_equal_to_scheduled(self, ticket_type, event, another_user):
-        ...
-        # TODO: ticket creation should fails if event.status != Scheduled
+        event.status = EventStatusChoice.DRAFT
+        event.save()
+        ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": 1}]
+
+        with pytest.raises(BadRequestException, match="Event is not open to register."):
+            TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
 
     def test_tickets_released_after_timeout_when_unpaid_by_user(self, ticket_type, event, another_user):
-        ...
-        # TODO: tickets held by users should be released after 15 minutes if unpaid
+        ticket_types = [{"ticket_type_public_id": ticket_type.public_id, "count": 1}]
+
+        TicketCreationService().handle_ticket_creation(event=event, user=another_user, ticket_types=ticket_types)
+
+        assert Ticket.objects.first().status == TicketStatusChoice.PENDING
+        assert TicketTransaction.objects.first().status == BillStatusChoice.PENDING
+
+        after_expiration = timedelta(minutes=16)
+        with time_machine.travel(after_expiration):
+            invalidate_transactions()
+
+        assert Ticket.objects.first().status == TicketStatusChoice.CANCELLED
+        assert TicketTransaction.objects.first().status == BillStatusChoice.CANCELLED
 
     def test_create_ticket_fails_if_non_existing_ticket_type_public_id_is_passed(self, event, another_user):
         ticket_types = [{"ticket_type_public_id": uuid.uuid4(), "count": 1}]
