@@ -27,7 +27,7 @@ class PayTransactionView(GenericAPIView):
 
         ticket_transaction = get_object_or_404(ticket_transaction)
 
-        if ticket_transaction.final_amount < BASE_AMOUNT:
+        if ticket_transaction.amount < BASE_AMOUNT:
             ticket_transaction.confirm(ticket_transaction.public_id)
             ticket_transaction.authority = ticket_transaction.public_id
             ticket_transaction.save()
