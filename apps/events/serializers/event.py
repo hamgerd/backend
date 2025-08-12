@@ -36,6 +36,7 @@ class EventSerializer(serializers.ModelSerializer):
             "geo_location",
             "max_participants",
             "is_active",
+            "commission_payer",
             "created_at",
             "updated_at",
         ]
@@ -78,5 +79,6 @@ class EventCreateSerializer(serializers.ModelSerializer):
             "location",
             "geo_location",
             "ticket_types",
+            "commission_payer",
         ]
         read_only_fields = ["public_id"]

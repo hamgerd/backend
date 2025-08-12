@@ -1,6 +1,7 @@
 .PHONY: migrations migrate run shell superuser collectstatic worker codegen swagger help test test-coverage lint test-all prepare
 
-python3 = uv run python3
+uv = uv run
+python3 = $(uv) python3
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
@@ -33,7 +34,7 @@ collectstatic:
 	$(python3) manage.py collectstatic --no-input
 
 test:
-	$(python3) manage.py test
+	$(uv) pytest
 
 worker:
 	uv run celery -A config worker -l info

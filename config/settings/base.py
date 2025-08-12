@@ -155,6 +155,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.payment.tasks.invalidate_transactions",
         "schedule": timedelta(minutes=1),
     },
+    "end_up_events_on_end_date": {
+        "task": "apps.events.tasks.end_up_events_on_end_date",
+        "schedule": timedelta(minutes=15),
+    },
 }
 
 # Minio

@@ -27,7 +27,7 @@ class PayTransactionView(GenericAPIView):
 
         ticket_transaction = get_object_or_404(ticket_transaction)
 
-        if ticket_transaction.amount < BASE_AMOUNT:
+        if ticket_transaction.final_amount < BASE_AMOUNT:
             ticket_transaction.confirm(ticket_transaction.public_id)
             ticket_transaction.authority = ticket_transaction.public_id
             ticket_transaction.save()
@@ -36,7 +36,7 @@ class PayTransactionView(GenericAPIView):
         else:
             ta_req = TransactionRequest(
                 merchant_id=MERCHANT_ID,
-                amount=int(ticket_transaction.amount),
+                amount=int(ticket_transaction.final_amount),
                 currency=DEFAULT_CURRENCY,
                 description="Test Description",
                 callback_url=settings.CALLBACK_URL,
@@ -68,7 +68,7 @@ class VerifyPaymentView(APIView):
                 trs = build_transaction_result(ticket_transaction)
                 return Response(trs, status=400)
             case BillStatusChoice.PENDING:
-                response = verify_payment_request(authority, ticket_transaction.amount, MERCHANT_ID)
+                response = verify_payment_request(authority, ticket_transaction.final_amount, MERCHANT_ID)
                 if response["status"]:
                     ref_id = response["data"]["ref_id"]
                     ticket_transaction.confirm(ref_id)
