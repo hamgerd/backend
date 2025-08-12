@@ -6,7 +6,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from .base import *  # noqa: F403
 from .base import ALLOWED_HOSTS, REST_FRAMEWORK
 
-ALLOWED_HOSTS += ["hamgerd.ir", "api.hamgerd.ir"]
+ALLOWED_HOSTS += ["hamgerd.ir", "api.hamgerd.ir","localhost"]
 CSRF_TRUSTED_ORIGINS = ["https://api.hamgerd.ir", "https://hamgerd.ir"]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
