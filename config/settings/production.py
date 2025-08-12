@@ -1,5 +1,7 @@
 import sentry_sdk
 from decouple import config
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from .base import *  # noqa: F403
 from .base import ALLOWED_HOSTS, REST_FRAMEWORK
@@ -67,6 +69,7 @@ if SENTRY_DSN:
         traces_sample_rate=0.05,
         profile_session_sample_rate=0,
         profile_lifecycle="trace",
+        integrations=[DjangoIntegration(), CeleryIntegration()],
     )
 
 ATOMIC_REQUESTS = True
