@@ -35,6 +35,14 @@ class TestTicketCreationService:
                     event=event, user=another_user, ticket_types=ticket_types
                 )
 
+    def test_create_ticket_fails_if_event_status_not_equal_to_scheduled(self, ticket_type, event, another_user):
+        ...
+        # TODO: ticket creation should fails if event.status != Scheduled
+
+    def test_tickets_released_after_timeout_when_unpaid_by_user(self, ticket_type, event, another_user):
+        ...
+        # TODO: tickets held by users should be released after 15 minutes if unpaid
+
     def test_create_ticket_fails_if_non_existing_ticket_type_public_id_is_passed(self, event, another_user):
         ticket_types = [{"ticket_type_public_id": uuid.uuid4(), "count": 1}]
 
