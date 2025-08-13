@@ -41,9 +41,9 @@ class SpeakerViewSet(
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsOrganizationOwnerThroughPermission()]
 
-    def create(self, request, event_pk=None):
+    def create(self, request, event_public_id=None):
         """Create a new speaker for a specific event"""
-        event = self.get_event(request.user, event_pk)
+        event = self.get_event(request.user, event_public_id)
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save(event=event)
@@ -60,9 +60,9 @@ class SpeakerViewSet(
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
-    def get_event(user, event_pk):
+    def get_event(user, event_public_id):
         """Get the provided event_pk if the organization owner is the provided user"""
         try:
-            return Event.objects.filter(organization__owner=user).get(pk=event_pk)
+            return Event.objects.filter(organization__owner=user).get(pk=event_public_id)
         except Event.DoesNotExist:
             raise NotFound("Event was not found or doesn't belong to you.")
