@@ -63,6 +63,6 @@ class SpeakerViewSet(
     def get_event(user, event_public_id):
         """Get the provided event_pk if the organization owner is the provided user"""
         try:
-            return Event.objects.filter(organization__owner=user).get(pk=event_public_id)
+            return Event.objects.filter(organization__owner=user).get(public_id=event_public_id)
         except Event.DoesNotExist:
             raise NotFound("Event was not found or doesn't belong to you.")
