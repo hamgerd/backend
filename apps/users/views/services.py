@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from decouple import config
 from django.db import transaction
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -30,8 +29,6 @@ class UserRegisterService:
 
     @staticmethod
     def _send_verification_email(user, verification_token):
-        auth_user = config("DEFAULT_FROM_EMAIL_USER")
-        auth_password = config("DEFAULT_FROM_EMAIL_PASSWORD")
         send_email.delay(
             subject="Verification Email",
             template_name="users/verification_email.html",
@@ -42,8 +39,6 @@ class UserRegisterService:
                 "token": verification_token.token,
                 "email_verification_url": EMAIL_VERIFICATION_URL,
             },
-            auth_user=auth_user,
-            auth_password=auth_password,
         )
 
     @staticmethod
